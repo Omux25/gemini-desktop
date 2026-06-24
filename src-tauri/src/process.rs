@@ -26,21 +26,6 @@ mod windows_api {
         let mut sys = System::new_all();
         sys.refresh_all();
         
-        let mut pids = HashSet::new();
-        pids.insert(root_pid);
-
-        // Webview2 processes are sometimes detached from the main process tree by the OS.
-        // We aggressively search for any msedgewebview2.exe processes that have our app's identifier in their command line.
-        for (pid, process) in sys.processes() {
-            let name = process.name().to_string_lossy().to_lowercase();
-            if name.contains("msedgewebview2") {
-                let cmd = process.cmd().iter().map(|s| s.to_string_lossy().to_string()).collect::<Vec<_>>().join(" ").to_lowercase();
-                if cmd.contains("com.omux2.geminidesktop") || cmd.contains("gemini") || cmd.contains("tauri-app") {
-                    pids.insert(pid.as_u32());
-                }
-            }
-        }
-        
         let mut parent_map: HashMap<u32, Vec<u32>> = HashMap::new();
         for (pid, process) in sys.processes() {
             if let Some(parent) = process.parent() {
@@ -48,14 +33,13 @@ mod windows_api {
             }
         }
         
-        let mut to_visit: Vec<u32> = pids.iter().copied().collect();
+        let mut pids = HashSet::new();
+        let mut to_visit = vec![root_pid];
         
         while let Some(current_pid) = to_visit.pop() {
-            if let Some(children) = parent_map.get(&current_pid) {
-                for child in children {
-                    if pids.insert(*child) {
-                        to_visit.push(*child);
-                    }
+            if pids.insert(current_pid) {
+                if let Some(children) = parent_map.get(&current_pid) {
+                    to_visit.extend(children.iter().copied());
                 }
             }
         }
