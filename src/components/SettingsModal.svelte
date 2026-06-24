@@ -22,33 +22,34 @@
   }
 
   function handleHotkeyChange(newHotkey: string) {
-    settingsService.setHotkey($globalHotkey, newHotkey).catch(console.error);
+    const oldHotkey = $globalHotkey;
     globalHotkey.set(newHotkey);
+    settingsService.setHotkey(oldHotkey, newHotkey).catch(console.error);
   }
 
   function handleSizeChange(sizeId: string) {
-    settingsService.setWindowSize(sizeId as any, $isLocked).catch(console.error);
     windowSize.set(sizeId);
+    settingsService.setWindowSize(sizeId as any, $isLocked).catch(console.error);
   }
 
   function handlePinnedChange(pinned: boolean) {
-    settingsService.setPinned(pinned).catch(console.error);
     isPinned.set(pinned);
+    settingsService.setPinned(pinned).catch(console.error);
   }
 
   function handleLockedChange(locked: boolean) {
-    settingsService.setLocked(locked).catch(console.error);
     isLocked.set(locked);
+    settingsService.setLocked(locked).catch(console.error);
   }
 
   function handleStartupChange(startup: boolean) {
-    settingsService.setStartup(startup).catch(console.error);
     isStartup.set(startup);
+    settingsService.setStartup(startup).catch(console.error);
   }
 
   function handleSmoothModeChange(enabled: boolean) {
-    settingsService.setSmoothMode(enabled).catch(console.error);
     isSmoothMode.set(enabled);
+    settingsService.setSmoothMode(enabled).catch(console.error);
     showDialog = true;
   }
 
@@ -61,7 +62,7 @@
 <div class="settings-modal">
   <div class="settings-header">
       <h2>Settings</h2>
-      <span class="version-text">v0.1.0</span>
+      <span class="version-text">v1.0.0</span>
   </div>
   
   <div class="settings-content">

@@ -36,6 +36,7 @@
               });
           }
 
+          let unlistenResize: (() => void) | undefined;
           appWindow.onResized(async ({ payload: newSize }) => {
               try {
                   const scaleFactor = await appWindow.scaleFactor();
@@ -45,7 +46,11 @@
               } catch (err) {
                   console.error('Failed to resize webview', err);
               }
-          });
+          }).then(fn => unlistenResize = fn);
+          
+          return () => {
+              if (unlistenResize) unlistenResize();
+          };
       } catch (err) {
           console.error('Failed to setup webview completely', err);
       }

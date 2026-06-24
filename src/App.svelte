@@ -27,11 +27,11 @@
     
     const unlistenShow = await listen('request-show', async () => {
         // If settings are not visible, show the webview
-        isSettingsVisible.subscribe(async (visible) => {
-          if (!visible) {
-            await invoke('show_webview');
-          }
-        })();
+        import('svelte/store').then(({ get }) => {
+            if (!get(isSettingsVisible)) {
+                invoke('show_webview').catch(console.error);
+            }
+        });
     });
 
     return () => {
