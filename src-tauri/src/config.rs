@@ -2,7 +2,7 @@ pub fn load_smooth_mode() -> bool {
     let mut is_smooth_mode = false;
     #[cfg(target_os = "windows")]
     {
-        if let Some(mut file_path) = dirs::data_local_dir() {
+        if let Some(mut file_path) = dirs::data_dir() {
             file_path.push("com.omux2.geminidesktop");
             file_path.push("settings.json");
             if let Ok(contents) = std::fs::read_to_string(file_path) {

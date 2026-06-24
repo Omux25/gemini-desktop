@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { invoke } from '@tauri-apps/api/core';
-import { Store } from '@tauri-apps/plugin-store';
+import { LazyStore } from '@tauri-apps/plugin-store';
 
 export const CONSTANTS = {
     UI: {
@@ -17,7 +17,7 @@ export const CONSTANTS = {
     }
 };
 
-export const settingsStore = new Store('settings.json');
+export const settingsStore = new LazyStore('settings.json');
 
 // State stores
 export const isSettingsVisible = writable(false);
@@ -30,7 +30,7 @@ export const isSmoothMode = writable(false);
 
 export async function hydrateSettings() {
     // Await the store to be loaded
-    await settingsStore.load();
+    await settingsStore.init();
     
     const savedHotkey = await settingsStore.get<string>('globalHotkey');
     if (savedHotkey) {
