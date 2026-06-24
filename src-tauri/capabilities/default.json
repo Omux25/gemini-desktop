@@ -18,6 +18,7 @@
     "core:webview:allow-set-webview-position",
     "core:webview:allow-set-webview-size",
     "opener:default",
-    "autostart:default"
+    "autostart:default",
+    "store:default"
   ]
 }

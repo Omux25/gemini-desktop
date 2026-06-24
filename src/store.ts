@@ -39,12 +39,21 @@ export async function hydrateSettings() {
     }
 
     const savedSize = await settingsStore.get<string>('windowSize');
-    if (savedSize) windowSize.set(savedSize);
+    if (savedSize) {
+        windowSize.set(savedSize);
+        const preset = CONSTANTS.WINDOW_SIZES[savedSize as keyof typeof CONSTANTS.WINDOW_SIZES];
+        if (preset) {
+            const { getCurrentWindow, LogicalSize } = await import('@tauri-apps/api/window');
+            await getCurrentWindow().setSize(new LogicalSize(preset.width, preset.height));
+        }
+    }
 
     const savedPinned = await settingsStore.get<boolean>('isPinned');
     if (savedPinned !== null) {
         isPinned.set(savedPinned);
         await invoke('sync_pinned', { pinned: savedPinned }).catch(console.error);
+        const { getCurrentWindow } = await import('@tauri-apps/api/window');
+        await getCurrentWindow().setAlwaysOnTop(savedPinned);
     }
 
     const savedLocked = await settingsStore.get<boolean>('isLocked');
