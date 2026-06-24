@@ -7,11 +7,15 @@
   import Titlebar from './components/Titlebar.svelte';
   import SettingsModal from './components/SettingsModal.svelte';
   import WebviewContainer from './components/WebviewContainer.svelte';
-  import { isSettingsVisible } from './store';
+  import { isSettingsVisible, hydrateSettings, windowSize, isLocked, globalHotkey, CONSTANTS } from './store';
+  import { settingsService } from './services/settingsService';
 
   const appWindow = getCurrentWindow();
 
   onMount(async () => {
+    // Load persisted settings
+    await hydrateSettings();
+    
     // Tell Rust backend we are ready to show the window gracefully
     await invoke('frontend_ready');
 
