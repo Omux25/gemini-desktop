@@ -1,6 +1,5 @@
 import { writable } from 'svelte/store';
 import { invoke } from '@tauri-apps/api/core';
-import { LazyStore } from '@tauri-apps/plugin-store';
 
 export const CONSTANTS = {
     UI: {
@@ -17,8 +16,6 @@ export const CONSTANTS = {
     }
 };
 
-export const settingsStore = new LazyStore('settings.json');
-
 // State stores
 export const isSettingsVisible = writable(false);
 export const globalHotkey = writable(CONSTANTS.HOTKEYS.DEFAULT);
@@ -29,43 +26,41 @@ export const isStartup = writable(false);
 export const isSmoothMode = writable(false);
 
 export async function hydrateSettings() {
-    // Await the store to be loaded
-    await settingsStore.init();
-    
-    const savedHotkey = await settingsStore.get<string>('globalHotkey');
-    if (savedHotkey) {
-        globalHotkey.set(savedHotkey);
-        await invoke('change_hotkey', { oldHotkey: CONSTANTS.HOTKEYS.DEFAULT, newHotkey: savedHotkey }).catch(console.error);
-    }
+    try {
+        const jsonStr = await invoke<string>('load_settings');
+        const settings = JSON.parse(jsonStr || '{}');
 
-    const savedSize = await settingsStore.get<string>('windowSize');
-    if (savedSize) {
-        windowSize.set(savedSize);
-        const preset = CONSTANTS.WINDOW_SIZES[savedSize as keyof typeof CONSTANTS.WINDOW_SIZES];
-        if (preset) {
-            const { getCurrentWindow, LogicalSize } = await import('@tauri-apps/api/window');
-            await getCurrentWindow().setSize(new LogicalSize(preset.width, preset.height));
+        if (settings.globalHotkey) {
+            globalHotkey.set(settings.globalHotkey);
+            await invoke('change_hotkey', { oldHotkey: CONSTANTS.HOTKEYS.DEFAULT, newHotkey: settings.globalHotkey }).catch(console.error);
         }
+
+        if (settings.windowSize) {
+            windowSize.set(settings.windowSize);
+            const preset = CONSTANTS.WINDOW_SIZES[settings.windowSize as keyof typeof CONSTANTS.WINDOW_SIZES];
+            if (preset) {
+                const { getCurrentWindow, LogicalSize } = await import('@tauri-apps/api/window');
+                await getCurrentWindow().setSize(new LogicalSize(preset.width, preset.height));
+            }
+        }
+
+        if (settings.isPinned !== undefined) {
+            isPinned.set(settings.isPinned);
+            await invoke('sync_pinned', { pinned: settings.isPinned }).catch(console.error);
+            const { getCurrentWindow } = await import('@tauri-apps/api/window');
+            await getCurrentWindow().setAlwaysOnTop(settings.isPinned);
+        }
+
+        if (settings.isLocked !== undefined) {
+            isLocked.set(settings.isLocked);
+            const { getCurrentWindow } = await import('@tauri-apps/api/window');
+            await getCurrentWindow().setResizable(!settings.isLocked);
+        }
+
+        if (settings.isStartup !== undefined) isStartup.set(settings.isStartup);
+        if (settings.isSmoothMode !== undefined) isSmoothMode.set(settings.isSmoothMode);
+
+    } catch (e) {
+        console.error("Critical error loading settings:", e);
     }
-
-    const savedPinned = await settingsStore.get<boolean>('isPinned');
-    if (savedPinned !== null) {
-        isPinned.set(savedPinned);
-        await invoke('sync_pinned', { pinned: savedPinned }).catch(console.error);
-        const { getCurrentWindow } = await import('@tauri-apps/api/window');
-        await getCurrentWindow().setAlwaysOnTop(savedPinned);
-    }
-
-    const savedLocked = await settingsStore.get<boolean>('isLocked');
-    if (savedLocked !== null) {
-        isLocked.set(savedLocked);
-        const { getCurrentWindow } = await import('@tauri-apps/api/window');
-        await getCurrentWindow().setResizable(!savedLocked);
-    }
-
-    const savedStartup = await settingsStore.get<boolean>('isStartup');
-    if (savedStartup !== null) isStartup.set(savedStartup);
-
-    const savedSmoothMode = await settingsStore.get<boolean>('isSmoothMode');
-    if (savedSmoothMode !== null) isSmoothMode.set(savedSmoothMode);
 }

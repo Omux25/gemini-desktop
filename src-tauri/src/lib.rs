@@ -43,6 +43,8 @@ pub fn run() {
             ipc::settings::change_hotkey,
             ipc::system::restart_app,
             ipc::settings::set_smooth_mode,
+            ipc::settings::load_settings,
+            ipc::settings::save_settings,
             ipc::window::frontend_ready
         ])
         .on_window_event(|window, event| match event {

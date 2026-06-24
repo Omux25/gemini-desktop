@@ -36,3 +36,26 @@ pub fn change_hotkey(app: tauri::AppHandle, state: tauri::State<'_, AppState>, o
     
     Ok(())
 }
+
+#[tauri::command]
+pub fn load_settings() -> Result<String, String> {
+    if let Some(mut file_path) = dirs::data_dir() {
+        file_path.push("com.omux2.geminidesktop");
+        file_path.push("settings.json");
+        if let Ok(contents) = std::fs::read_to_string(file_path) {
+            return Ok(contents);
+        }
+    }
+    Ok("{}".to_string())
+}
+
+#[tauri::command]
+pub fn save_settings(settings_json: String) -> Result<(), String> {
+    if let Some(mut file_path) = dirs::data_dir() {
+        file_path.push("com.omux2.geminidesktop");
+        let _ = std::fs::create_dir_all(&file_path);
+        file_path.push("settings.json");
+        let _ = std::fs::write(file_path, settings_json);
+    }
+    Ok(())
+}
