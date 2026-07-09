@@ -3,6 +3,7 @@ pub mod process;
 pub mod ipc;
 pub mod config;
 pub mod tray;
+pub mod updater;
 
 use std::sync::atomic::Ordering;
 use crate::state::AppState;
@@ -50,7 +51,10 @@ pub fn run() {
             ipc::settings::set_custom_prompt,
             ipc::settings::load_settings,
             ipc::settings::save_settings,
-            ipc::window::frontend_ready
+            ipc::window::frontend_ready,
+            updater::is_portable,
+            updater::download_portable_update,
+            updater::install_portable_update
         ])
         .on_window_event(|window, event| match event {
             tauri::WindowEvent::CloseRequested { api, .. } => {
