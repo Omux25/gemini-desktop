@@ -84,7 +84,7 @@ pub fn install_portable_update(app: AppHandle, downloaded_path: String) -> Resul
         del \"{}\"\n\
         move /y \"{}\" \"{}\"\n\
         start \"\" \"{}\"\n\
-        del \"%~f0\"",
+        (goto) 2>nul & del \"%~f0\"",
         current_exe.to_string_lossy(),
         downloaded_path,
         current_exe.to_string_lossy(),
@@ -93,11 +93,25 @@ pub fn install_portable_update(app: AppHandle, downloaded_path: String) -> Resul
 
     fs::write(&bat_path, bat_content).map_err(|e| e.to_string())?;
 
-    // Run the batch file completely detached so it survives the app exit
-    Command::new("cmd")
-        .args(["/C", "start", "/b", "", bat_path.to_string_lossy().as_ref()])
-        .spawn()
-        .map_err(|e| e.to_string())?;
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        
+        Command::new("cmd")
+            .args(["/C", bat_path.to_string_lossy().as_ref()])
+            .creation_flags(CREATE_NO_WINDOW)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        Command::new("sh")
+            .args(["-c", bat_path.to_string_lossy().as_ref()])
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
 
     // Exit the app immediately
     std::process::exit(0);
