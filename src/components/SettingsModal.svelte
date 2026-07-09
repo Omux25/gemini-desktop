@@ -3,7 +3,7 @@
     isSettingsVisible, hotkeyToggle, hotkeyCopy, hotkeySnip, customPrompt, windowSize, 
     isPinned, isLocked, isStartup, isSmoothMode, isAutoHide, CONSTANTS 
   } from '../store';
-  import { updaterService, updateState, updateProgress, updateVersion, updateNotes, updateErrorMsg } from '../services/updaterService';
+  import { updaterService, updateState, updateProgress, updateVersion, updateNotes } from '../services/updaterService';
   import { settingsService } from '../services/settingsService';
   import { windowService } from '../services/windowService';
   import { getVersion } from '@tauri-apps/api/app';
@@ -98,15 +98,6 @@
       </div>
       
       <div class="settings-content">
-          {#if $updateErrorMsg !== ''}
-            <div class="update-banner error">
-              <div class="update-info">
-                <div class="update-title">Updater Error</div>
-                <div class="update-notes">{$updateErrorMsg}</div>
-              </div>
-            </div>
-          {/if}
-
           <UpdaterBar />
 
           <HotkeySetting 
