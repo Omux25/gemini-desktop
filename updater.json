@@ -4,8 +4,8 @@
   "pub_date": "2026-07-09T15:46:25Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSajBsQ1NSWmpHcUVlL0dISFk1RC8rbFo5RmdTQVl1TkJWZTJvSEpzdlB6QUhBMWlyOU1EdDBCc0pzcWdQWE04NUVIZzlmd2xBR01lejM0Ni9US3NpcGxHMmZSTjUzSWc4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjE2NzAwCWZpbGU6R2VtaW5pLVVwZGF0ZXItQ29yZS56aXAKdGx0emErbXk2dzAzZEJXWEJueDFlaVNIaG1MdGNhb01ESERCYkhFUmpNbjJIYVREazM0dDFodDFVdzN6SjFyOUsxd2hpRUozcEVrTGhQcGNGVkYzRGc9PQo=",
-      "url": "https://github.com/Omux25/gemini-desktop/releases/download/v2.1.0/Gemini-Updater-Core.zip"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSajBsQ1NSWmpHcU9TN085NkhkRnR1bGYxTGxXTnBPVTZ6RW12SlFCeUxQL2VUNjUwTG9MUllTUlNVNmVkQ0pxRHNMZjYvamhEOTlicVlPdjNvUGZkSGlPczUvdjVZcWc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjE3NDgwCWZpbGU6R2VtaW5pIERlc2t0b3BfMi4xLjBfeDY0LXNldHVwLmV4ZQpyVkJmK09qeEw1aldXNFNNZHc4ekxGRDVjblJmNDFZb3Y2SVZaaE15bklRSGlKTE5hd3RrQ3g1eDJZZ2libS82dFhoY1dxMkY1eHBabjR1Qm1LMmRCQT09Cg==",
+      "url": "https://github.com/Omux25/gemini-desktop/releases/download/v2.1.0/Gemini-Desktop-Setup.exe"
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "name": "Gemini-Desktop",
   "private": true,
-  "version": "2.0.9",
+  "version": "2.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,7 +18,8 @@
     "@tauri-apps/plugin-store": "^2.4.3",
     "@tauri-apps/plugin-updater": "^2.10.1",
     "@tauri-apps/plugin-window-state": "^2.4.1",
-    "adm-zip": "^0.5.18"
+    "adm-zip": "^0.5.18",
+    "archiver": "^8.0.0"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.1.1",
