@@ -8,6 +8,7 @@ export const updateState = writable<UpdateState>('idle');
 export const updateProgress = writable({ downloaded: 0, total: 0 });
 export const updateVersion = writable<string>('');
 export const updateNotes = writable<string>('');
+export const updateErrorMsg = writable<string>('');
 
 let updateInstance: any = null;
 
@@ -23,11 +24,12 @@ export const updaterService = {
                 updateState.set('available');
                 return true;
             } else {
+                updateErrorMsg.set("No update found! The remote version isn't higher, or JSON signature failed.");
                 updateState.set('idle');
                 return false;
             }
         } catch (error) {
-            console.error('Failed to check for updates:', error);
+            updateErrorMsg.set(String(error));
             updateState.set('idle');
             return false;
         }

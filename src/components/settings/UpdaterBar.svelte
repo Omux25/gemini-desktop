@@ -34,7 +34,7 @@
     {:else if $updateState === 'available'}
         <div class="updater-row">
             <div class="updater-info">
-                <strong>Update Available ✨</strong>
+                <strong>Update Available</strong>
                 <span>Version {$updateVersion} is ready to install</span>
             </div>
             <button class="updater-btn" onclick={handleUpdate}>Download</button>
@@ -52,7 +52,7 @@
     {:else if $updateState === 'ready'}
         <div class="updater-row">
             <div class="updater-info">
-                <strong>Ready to Install 🎉</strong>
+                <strong>Ready to Install</strong>
                 <span class="ready-text">Update downloaded successfully</span>
             </div>
             <button class="updater-btn ready-btn" onclick={handleRestart}>Install & Relaunch</button>
