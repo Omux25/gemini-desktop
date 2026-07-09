@@ -58,8 +58,9 @@ export const updaterService = {
             });
             updateState.set('ready');
         } catch (error) {
+            alert('Download failed: ' + String(error));
             console.error('Failed to download update:', error);
-            updateState.set('idle');
+            updateState.set('available');
         }
     },
 
