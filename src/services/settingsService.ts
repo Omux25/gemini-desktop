@@ -1,26 +1,29 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window';
 import { enable as enableAutostart, disable as disableAutostart } from '@tauri-apps/plugin-autostart';
-import { CONSTANTS, globalHotkey, windowSize, isPinned, isLocked, isStartup, isSmoothMode } from '../store';
+import { CONSTANTS, hotkeyToggle, hotkeyCopy, hotkeySnip, windowSize, isPinned, isLocked, isStartup, isSmoothMode, isAutoHide } from '../store';
 import { get } from 'svelte/store';
 
 const appWindow = getCurrentWindow();
 
 async function saveAllSettings() {
     const settings = {
-        globalHotkey: get(globalHotkey),
+        hotkeyToggle: get(hotkeyToggle),
+        hotkeyCopy: get(hotkeyCopy),
+        hotkeySnip: get(hotkeySnip),
         windowSize: get(windowSize),
         isPinned: get(isPinned),
         isLocked: get(isLocked),
         isStartup: get(isStartup),
-        isSmoothMode: get(isSmoothMode)
+        isSmoothMode: get(isSmoothMode),
+        isAutoHide: get(isAutoHide)
     };
     await invoke('save_settings', { settingsJson: JSON.stringify(settings) }).catch(console.error);
 }
 
 export const settingsService = {
-  async setHotkey(oldHotkey: string, newHotkey: string) {
-    await invoke('change_hotkey', { oldHotkey, newHotkey });
+  async setHotkey(action: string, oldHotkey: string, newHotkey: string) {
+    await invoke('change_hotkey', { action, oldHotkey, newHotkey });
     await saveAllSettings();
   },
 
@@ -58,6 +61,11 @@ export const settingsService = {
 
   async setSmoothMode(enabled: boolean) {
     await invoke('set_smooth_mode', { enabled });
+    await saveAllSettings();
+  },
+
+  async setAutoHide(enabled: boolean) {
+    await invoke('set_auto_hide', { enabled });
     await saveAllSettings();
   },
 

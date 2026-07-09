@@ -30,6 +30,7 @@ pub fn run() {
                 .build()
         )
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             ipc::system::greet,
@@ -39,10 +40,12 @@ pub fn run() {
             ipc::window::show_webview,
             ipc::window::sync_visibility,
             ipc::window::sync_pinned,
+            ipc::window::inject_text,
             process::optimize_memory,
             ipc::settings::change_hotkey,
             ipc::system::restart_app,
             ipc::settings::set_smooth_mode,
+            ipc::settings::set_auto_hide,
             ipc::settings::load_settings,
             ipc::settings::save_settings,
             ipc::window::frontend_ready
@@ -59,15 +62,54 @@ pub fn run() {
             }
             tauri::WindowEvent::Focused(focused) => {
                 use tauri::Manager;
-                window.state::<crate::state::AppState>().window_focused.store(*focused, Ordering::Release);
+                let app = window.app_handle();
+                let state = app.state::<crate::state::AppState>();
+                state.window_focused.store(*focused, Ordering::Release);
+                
+                if !focused {
+                    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
+                    let last_shown = state.last_shown_time.load(Ordering::Acquire);
+                    let startup = state.startup_time.load(Ordering::Acquire);
+                    
+                    // Do not auto-hide for the first 3 seconds after the app launches.
+                    // This prevents terminal windows or other background startup processes from instantly stealing focus and hiding the app.
+                    if now.saturating_sub(startup) < 3000 {
+                        return;
+                    }
+                    
+                    // Reduced grace period to 150ms. 
+                    // This prevents the bug where clicking away quickly traps the window in an unfocused state.
+                    if now.saturating_sub(last_shown) > 150 {
+                        let is_pinned = state.window_pinned.load(Ordering::Acquire);
+                        
+                        if !is_pinned {
+                            let _ = window.set_always_on_top(false);
+                        }
+                        
+                        let is_auto_hide = state.auto_hide.load(Ordering::Acquire);
+                        if is_auto_hide && !is_pinned {
+                            let _ = window.hide();
+                            state.window_visible.store(false, Ordering::Release);
+                            crate::process::optimize_memory(app.clone());
+                        }
+                    } else {
+                        // OS Glitch: It lost focus immediately.
+                        // We must reclaim focus so winit doesn't permanently trap the window in an unfocused state!
+                        // Calling window.set_focus() instead of WinAPI SetFocus ensures the WebView child gets the focus
+                        let _ = window.set_focus();
+                    }
+                }
             }
             _ => {}
         })
         .setup(|app| {
             use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState, Shortcut};
             
-            let default_hotkey = "Alt+Space";
-            if let Ok(key) = default_hotkey.parse::<Shortcut>() {
+            let default_toggle = "Alt+Space";
+            let default_copy = "Alt+C";
+            let default_snip = "Alt+S";
+
+            if let Ok(key) = default_toggle.parse::<Shortcut>() {
                 if !app.global_shortcut().is_registered(key) {
                     let _ = app.global_shortcut().on_shortcut(key, move |app_handle, _shortcut, event| {
                         if event.state() == ShortcutState::Released {
@@ -77,12 +119,31 @@ pub fn run() {
                 }
             }
             
-            use tauri::Manager;
-            if let Ok(mut locked) = app.state::<crate::state::AppState>().global_hotkey.lock() {
-                *locked = default_hotkey.to_string();
-            } else {
-                log::error!("Failed to acquire lock for global hotkey state");
+            if let Ok(key) = default_copy.parse::<Shortcut>() {
+                if !app.global_shortcut().is_registered(key) {
+                    let _ = app.global_shortcut().on_shortcut(key, move |app_handle, _shortcut, event| {
+                        if event.state() == ShortcutState::Released {
+                            crate::ipc::window::grab_text_and_toggle_window(app_handle);
+                        }
+                    });
+                }
             }
+            
+            if let Ok(key) = default_snip.parse::<Shortcut>() {
+                if !app.global_shortcut().is_registered(key) {
+                    let _ = app.global_shortcut().on_shortcut(key, move |_app_handle, _shortcut, event| {
+                        if event.state() == ShortcutState::Released {
+                            // crate::ipc::window::start_snip_mode(app_handle); // Step 3
+                        }
+                    });
+                }
+            }
+            
+            use tauri::Manager;
+            let state = app.state::<crate::state::AppState>();
+            if let Ok(mut locked) = state.hotkey_toggle.lock() { *locked = default_toggle.to_string(); }
+            if let Ok(mut locked) = state.hotkey_copy.lock() { *locked = default_copy.to_string(); }
+            if let Ok(mut locked) = state.hotkey_snip.lock() { *locked = default_snip.to_string(); }
 
             tray::create_tray(app)?;
             Ok(())

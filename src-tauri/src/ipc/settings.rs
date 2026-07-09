@@ -1,7 +1,6 @@
 use std::sync::atomic::Ordering;
 use tauri_plugin_global_shortcut::ShortcutState;
 use crate::state::AppState;
-use crate::ipc::window::toggle_window;
 
 #[tauri::command]
 pub fn set_smooth_mode(state: tauri::State<'_, AppState>, enabled: bool) -> Result<(), String> {
@@ -10,7 +9,13 @@ pub fn set_smooth_mode(state: tauri::State<'_, AppState>, enabled: bool) -> Resu
 }
 
 #[tauri::command]
-pub fn change_hotkey(app: tauri::AppHandle, state: tauri::State<'_, AppState>, old_hotkey: String, new_hotkey: String) -> Result<(), String> {
+pub fn set_auto_hide(state: tauri::State<'_, AppState>, enabled: bool) -> Result<(), String> {
+    state.auto_hide.store(enabled, Ordering::Relaxed);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn change_hotkey(app: tauri::AppHandle, state: tauri::State<'_, AppState>, action: String, old_hotkey: String, new_hotkey: String) -> Result<(), String> {
     use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
     
     if old_hotkey != new_hotkey && !old_hotkey.is_empty() {
@@ -22,16 +27,25 @@ pub fn change_hotkey(app: tauri::AppHandle, state: tauri::State<'_, AppState>, o
     if !new_hotkey.is_empty() {
         let key = new_hotkey.parse::<Shortcut>().map_err(|e| e.to_string())?;
         if !app.global_shortcut().is_registered(key) {
+            let action_clone = action.clone();
             app.global_shortcut().on_shortcut(key, move |app_handle, _shortcut, event| {
                 if event.state() == ShortcutState::Released {
-                    toggle_window(app_handle);
+                    match action_clone.as_str() {
+                        "toggle" => crate::ipc::window::toggle_window(app_handle),
+                        "copy" => crate::ipc::window::grab_text_and_toggle_window(app_handle),
+                        "snip" => (), // To be implemented in Step 3
+                        _ => (),
+                    }
                 }
             }).map_err(|e| e.to_string())?;
         }
     }
 
-    if let Ok(mut locked) = state.global_hotkey.lock() {
-        *locked = new_hotkey;
+    match action.as_str() {
+        "toggle" => { if let Ok(mut locked) = state.hotkey_toggle.lock() { *locked = new_hotkey; } },
+        "copy" => { if let Ok(mut locked) = state.hotkey_copy.lock() { *locked = new_hotkey; } },
+        "snip" => { if let Ok(mut locked) = state.hotkey_snip.lock() { *locked = new_hotkey; } },
+        _ => return Err("Invalid hotkey action".to_string()),
     }
     
     Ok(())

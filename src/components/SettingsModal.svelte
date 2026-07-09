@@ -1,7 +1,7 @@
 <script lang="ts">
   import { 
-    isSettingsVisible, globalHotkey, windowSize, 
-    isPinned, isLocked, isStartup, isSmoothMode, CONSTANTS 
+    isSettingsVisible, hotkeyToggle, hotkeyCopy, hotkeySnip, windowSize, 
+    isPinned, isLocked, isStartup, isSmoothMode, isAutoHide, CONSTANTS 
   } from '../store';
   import { settingsService } from '../services/settingsService';
   import { windowService } from '../services/windowService';
@@ -21,10 +21,22 @@
     }
   }
 
-  function handleHotkeyChange(newHotkey: string) {
-    const oldHotkey = $globalHotkey;
-    globalHotkey.set(newHotkey);
-    settingsService.setHotkey(oldHotkey, newHotkey).catch(console.error);
+  function handleHotkeyToggleChange(newHotkey: string) {
+    const oldHotkey = $hotkeyToggle;
+    hotkeyToggle.set(newHotkey);
+    settingsService.setHotkey('toggle', oldHotkey, newHotkey).catch(console.error);
+  }
+
+  function handleHotkeyCopyChange(newHotkey: string) {
+    const oldHotkey = $hotkeyCopy;
+    hotkeyCopy.set(newHotkey);
+    settingsService.setHotkey('copy', oldHotkey, newHotkey).catch(console.error);
+  }
+
+  function handleHotkeySnipChange(newHotkey: string) {
+    const oldHotkey = $hotkeySnip;
+    hotkeySnip.set(newHotkey);
+    settingsService.setHotkey('snip', oldHotkey, newHotkey).catch(console.error);
   }
 
   function handleSizeChange(sizeId: string) {
@@ -53,6 +65,11 @@
     showDialog = true;
   }
 
+  function handleAutoHideChange(enabled: boolean) {
+    isAutoHide.set(enabled);
+    settingsService.setAutoHide(enabled).catch(console.error);
+  }
+
   const handleDone = () => isSettingsVisible.set(false);
   const handleDialogCancel = () => showDialog = false;
   const handleDialogRestart = () => settingsService.restartApp();
@@ -67,8 +84,12 @@
   
   <div class="settings-content">
       <HotkeySetting 
-        currentHotkey={$globalHotkey} 
-        onChange={handleHotkeyChange} 
+        currentToggle={$hotkeyToggle} 
+        currentCopy={$hotkeyCopy}
+        currentSnip={$hotkeySnip}
+        onToggleChange={handleHotkeyToggleChange} 
+        onCopyChange={handleHotkeyCopyChange}
+        onSnipChange={handleHotkeySnipChange}
       />
 
       <WindowSizeSetting 
@@ -106,6 +127,14 @@
         description="Allow Chromium to consume ~500MB+ for maximum performance. Requires restart."
         checked={$isSmoothMode}
         onChange={handleSmoothModeChange}
+      />
+
+      <ToggleSetting 
+        id="autoHideToggle"
+        title="Auto-Hide"
+        description="Automatically hide window when clicking away"
+        checked={$isAutoHide}
+        onChange={handleAutoHideChange}
       />
   </div>
 

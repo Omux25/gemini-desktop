@@ -7,7 +7,7 @@
   import Titlebar from './components/Titlebar.svelte';
   import SettingsModal from './components/SettingsModal.svelte';
   import WebviewContainer from './components/WebviewContainer.svelte';
-  import { isSettingsVisible, hydrateSettings, windowSize, isLocked, globalHotkey, CONSTANTS } from './store';
+  import { isSettingsVisible, hydrateSettings, windowSize, isLocked, CONSTANTS } from './store';
   import { settingsService } from './services/settingsService';
 
   const appWindow = getCurrentWindow();
@@ -26,17 +26,19 @@
     });
     
     const unlistenShow = await listen('request-show', async () => {
-        // If settings are not visible, show the webview
-        import('svelte/store').then(({ get }) => {
-            if (!get(isSettingsVisible)) {
-                invoke('show_webview').catch(console.error);
-            }
-        });
+        // Always reset to the chat view when the window is summoned
+        isSettingsVisible.set(false);
+        invoke('show_webview').catch(console.error);
+    });
+
+    const unlistenTextSelected = await listen<string>('text-selected', async (event) => {
+        await invoke('inject_text', { text: event.payload });
     });
 
     return () => {
       unlistenHide();
       unlistenShow();
+      unlistenTextSelected();
     };
   });
 </script>

@@ -12,27 +12,40 @@ export const CONSTANTS = {
         large: { width: 1024, height: 800 },
     },
     HOTKEYS: {
-        DEFAULT: 'Alt+Space'
+        DEFAULT_TOGGLE: 'Alt+Space',
+        DEFAULT_COPY: 'Alt+C',
+        DEFAULT_SNIP: 'Alt+S'
     }
 };
 
 // State stores
 export const isSettingsVisible = writable(false);
-export const globalHotkey = writable(CONSTANTS.HOTKEYS.DEFAULT);
+export const hotkeyToggle = writable(CONSTANTS.HOTKEYS.DEFAULT_TOGGLE);
+export const hotkeyCopy = writable(CONSTANTS.HOTKEYS.DEFAULT_COPY);
+export const hotkeySnip = writable(CONSTANTS.HOTKEYS.DEFAULT_SNIP);
 export const windowSize = writable('tall');
 export const isPinned = writable(false);
 export const isLocked = writable(false);
 export const isStartup = writable(false);
 export const isSmoothMode = writable(false);
+export const isAutoHide = writable(false);
 
 export async function hydrateSettings() {
     try {
         const jsonStr = await invoke<string>('load_settings');
         const settings = JSON.parse(jsonStr || '{}');
 
-        if (settings.globalHotkey) {
-            globalHotkey.set(settings.globalHotkey);
-            await invoke('change_hotkey', { oldHotkey: CONSTANTS.HOTKEYS.DEFAULT, newHotkey: settings.globalHotkey }).catch(console.error);
+        if (settings.hotkeyToggle) {
+            hotkeyToggle.set(settings.hotkeyToggle);
+            await invoke('change_hotkey', { action: 'toggle', oldHotkey: CONSTANTS.HOTKEYS.DEFAULT_TOGGLE, newHotkey: settings.hotkeyToggle }).catch(console.error);
+        }
+        if (settings.hotkeyCopy) {
+            hotkeyCopy.set(settings.hotkeyCopy);
+            await invoke('change_hotkey', { action: 'copy', oldHotkey: CONSTANTS.HOTKEYS.DEFAULT_COPY, newHotkey: settings.hotkeyCopy }).catch(console.error);
+        }
+        if (settings.hotkeySnip) {
+            hotkeySnip.set(settings.hotkeySnip);
+            await invoke('change_hotkey', { action: 'snip', oldHotkey: CONSTANTS.HOTKEYS.DEFAULT_SNIP, newHotkey: settings.hotkeySnip }).catch(console.error);
         }
 
         if (settings.windowSize) {
@@ -59,6 +72,11 @@ export async function hydrateSettings() {
 
         if (settings.isStartup !== undefined) isStartup.set(settings.isStartup);
         if (settings.isSmoothMode !== undefined) isSmoothMode.set(settings.isSmoothMode);
+        
+        if (settings.isAutoHide !== undefined) {
+            isAutoHide.set(settings.isAutoHide);
+            await invoke('set_auto_hide', { enabled: settings.isAutoHide }).catch(console.error);
+        }
 
     } catch (e) {
         console.error("Critical error loading settings:", e);
