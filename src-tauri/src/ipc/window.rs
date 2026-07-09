@@ -207,14 +207,42 @@ pub fn toggle_window(app: &tauri::AppHandle) {
         state.window_focused.store(true, Ordering::Release);
     } else {
         let should_hide = is_focused;
-        
         if should_hide {
-            for window in &main_windows {
-                if let Err(e) = window.hide() { eprintln!("Failed to hide window: {:?}", e); }
-            }
-            state.window_visible.store(false, Ordering::Release);
-            state.window_focused.store(false, Ordering::Release);
-            optimize_memory(app.clone());
+            let app_clone = app.clone();
+            let main_windows_clone = main_windows.clone();
+            
+            tauri::async_runtime::spawn(async move {
+                #[cfg(target_os = "windows")]
+                {
+                    use winapi::um::winuser::GetAsyncKeyState;
+                    // Wait until ALL physical keys are released (max 1.5 seconds)
+                    // This prevents "leaky KeyUp" bugs where the underlying application (e.g. YouTube)
+                    // receives the KeyUp event if we hide the window while the user is still holding keys.
+                    for _ in 0..150 { // 150 * 10ms = 1.5s
+                        let mut any_down = false;
+                        for i in 8..256 { // Skip mouse buttons (1-7)
+                            unsafe {
+                                if GetAsyncKeyState(i) < 0 {
+                                    any_down = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if !any_down {
+                            break;
+                        }
+                        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+                    }
+                }
+                
+                let state = app_clone.state::<AppState>();
+                for window in &main_windows_clone {
+                    if let Err(e) = window.hide() { eprintln!("Failed to hide window: {:?}", e); }
+                }
+                state.window_visible.store(false, Ordering::Release);
+                state.window_focused.store(false, Ordering::Release);
+                crate::process::optimize_memory(app_clone);
+            });
         } else {
             for window in &main_windows {
                 if let Err(e) = window.show_and_focus() { eprintln!("Failed to show window: {:?}", e); }

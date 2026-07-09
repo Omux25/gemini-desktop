@@ -106,10 +106,18 @@
       gap: 10px;
       letter-spacing: 0.4px;
       pointer-events: none; /* Let drag events pass through to the parent bar */
+      white-space: nowrap; /* Prevent wrapping */
   }
 
   .titlebar-text {
       color: #e3e3e3;
+  }
+
+  /* Responsive Titlebar */
+  @media (max-width: 450px) {
+      .titlebar-text {
+          display: none; /* Only show the logo icon on narrow screens to avoid smashing */
+      }
   }
 
   .titlebar-icon {

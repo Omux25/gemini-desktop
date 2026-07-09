@@ -29,7 +29,7 @@ pub fn change_hotkey(app: tauri::AppHandle, state: tauri::State<'_, AppState>, a
         if !app.global_shortcut().is_registered(key) {
             let action_clone = action.clone();
             app.global_shortcut().on_shortcut(key, move |app_handle, _shortcut, event| {
-                if event.state() == ShortcutState::Released {
+                if event.state() == ShortcutState::Pressed {
                     match action_clone.as_str() {
                         "toggle" => crate::ipc::window::toggle_window(app_handle),
                         "copy" => crate::ipc::window::grab_text_and_toggle_window(app_handle),

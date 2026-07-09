@@ -112,7 +112,7 @@ pub fn run() {
             if let Ok(key) = default_toggle.parse::<Shortcut>() {
                 if !app.global_shortcut().is_registered(key) {
                     let _ = app.global_shortcut().on_shortcut(key, move |app_handle, _shortcut, event| {
-                        if event.state() == ShortcutState::Released {
+                        if event.state() == ShortcutState::Pressed {
                             crate::ipc::window::toggle_window(app_handle);
                         }
                     });
@@ -122,7 +122,7 @@ pub fn run() {
             if let Ok(key) = default_copy.parse::<Shortcut>() {
                 if !app.global_shortcut().is_registered(key) {
                     let _ = app.global_shortcut().on_shortcut(key, move |app_handle, _shortcut, event| {
-                        if event.state() == ShortcutState::Released {
+                        if event.state() == ShortcutState::Pressed {
                             crate::ipc::window::grab_text_and_toggle_window(app_handle);
                         }
                     });
@@ -132,7 +132,7 @@ pub fn run() {
             if let Ok(key) = default_snip.parse::<Shortcut>() {
                 if !app.global_shortcut().is_registered(key) {
                     let _ = app.global_shortcut().on_shortcut(key, move |app_handle, _shortcut, event| {
-                        if event.state() == ShortcutState::Released {
+                        if event.state() == ShortcutState::Pressed {
                             crate::ipc::window::start_snip_mode(app_handle);
                         }
                     });
