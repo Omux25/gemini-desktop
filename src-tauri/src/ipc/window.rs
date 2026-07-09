@@ -1,7 +1,7 @@
 use tauri::{Manager, Emitter};
 use std::sync::atomic::Ordering;
 use crate::state::AppState;
-use crate::process::optimize_memory;
+
 
 trait WindowExt {
     fn show_and_focus(&self) -> tauri::Result<()>;

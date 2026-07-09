@@ -33,7 +33,7 @@ export const updaterService = {
         }
     },
 
-    async downloadAndInstall() {
+    async download() {
         if (!updateInstance) return;
         
         updateState.set('downloading');
@@ -41,7 +41,7 @@ export const updaterService = {
         let contentLength = 0;
 
         try {
-            await updateInstance.downloadAndInstall((event: any) => {
+            await updateInstance.download((event: any) => {
                 switch (event.event) {
                     case 'Started':
                         contentLength = event.data.contentLength || 0;
@@ -58,13 +58,19 @@ export const updaterService = {
             });
             updateState.set('ready');
         } catch (error) {
-            alert('Download failed: ' + String(error));
+            alert('Updater Error: ' + String(error));
             console.error('Failed to download update:', error);
             updateState.set('available');
         }
     },
 
-    async restartAndInstall() {
-        await invoke('restart_app');
+    async installUpdate() {
+        if (!updateInstance) return;
+        try {
+            await updateInstance.install();
+        } catch (error) {
+            alert('Install Error: ' + String(error));
+            console.error('Failed to install update:', error);
+        }
     }
 };

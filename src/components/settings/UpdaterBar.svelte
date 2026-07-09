@@ -17,11 +17,11 @@
     // Removed onMount check, now handled globally on app boot
 
     function handleUpdate() {
-        updaterService.downloadAndInstall();
+        updaterService.download();
     }
 
     function handleRestart() {
-        updaterService.restartAndInstall();
+        updaterService.installUpdate();
     }
 </script>
 
