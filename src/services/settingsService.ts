@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window';
 import { enable as enableAutostart, disable as disableAutostart } from '@tauri-apps/plugin-autostart';
-import { CONSTANTS, hotkeyToggle, hotkeyCopy, hotkeySnip, windowSize, isPinned, isLocked, isStartup, isSmoothMode, isAutoHide } from '../store';
+import { CONSTANTS, hotkeyToggle, hotkeyCopy, hotkeySnip, customPrompt, windowSize, isPinned, isLocked, isStartup, isSmoothMode, isAutoHide } from '../store';
 import { get } from 'svelte/store';
 
 const appWindow = getCurrentWindow();
@@ -11,6 +11,7 @@ async function saveAllSettings() {
         hotkeyToggle: get(hotkeyToggle),
         hotkeyCopy: get(hotkeyCopy),
         hotkeySnip: get(hotkeySnip),
+        customPrompt: get(customPrompt),
         windowSize: get(windowSize),
         isPinned: get(isPinned),
         isLocked: get(isLocked),
@@ -24,6 +25,11 @@ async function saveAllSettings() {
 export const settingsService = {
   async setHotkey(action: string, oldHotkey: string, newHotkey: string) {
     await invoke('change_hotkey', { action, oldHotkey, newHotkey });
+    await saveAllSettings();
+  },
+
+  async setCustomPrompt(prompt: string) {
+    await invoke('set_custom_prompt', { prompt });
     await saveAllSettings();
   },
 

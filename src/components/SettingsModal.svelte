@@ -1,17 +1,25 @@
 <script lang="ts">
   import { 
-    isSettingsVisible, hotkeyToggle, hotkeyCopy, hotkeySnip, windowSize, 
+    isSettingsVisible, hotkeyToggle, hotkeyCopy, hotkeySnip, customPrompt, windowSize, 
     isPinned, isLocked, isStartup, isSmoothMode, isAutoHide, CONSTANTS 
   } from '../store';
   import { settingsService } from '../services/settingsService';
   import { windowService } from '../services/windowService';
+  import { getVersion } from '@tauri-apps/api/app';
+  import { onMount } from 'svelte';
   
   import SettingGroup from './settings/SettingGroup.svelte';
   import ToggleSetting from './settings/ToggleSetting.svelte';
   import HotkeySetting from './settings/HotkeySetting.svelte';
   import WindowSizeSetting from './settings/WindowSizeSetting.svelte';
+  import UpdaterBar from './settings/UpdaterBar.svelte';
 
   let showDialog = false;
+  let appVersion = "Unknown";
+
+  onMount(async () => {
+      appVersion = await getVersion();
+  });
 
   $: {
     if ($isSettingsVisible) {
@@ -37,6 +45,11 @@
     const oldHotkey = $hotkeySnip;
     hotkeySnip.set(newHotkey);
     settingsService.setHotkey('snip', oldHotkey, newHotkey).catch(console.error);
+  }
+
+  function handlePromptChange(newPrompt: string) {
+    customPrompt.set(newPrompt);
+    settingsService.setCustomPrompt(newPrompt).catch(console.error);
   }
 
   function handleSizeChange(sizeId: string) {
@@ -80,17 +93,21 @@
   <div class="settings-modal-inner">
       <div class="settings-header">
           <h2>Settings</h2>
-          <span class="version-text">v2.0.0</span>
+          <span class="version-text">v{appVersion}</span>
       </div>
       
       <div class="settings-content">
+          <UpdaterBar />
+
           <HotkeySetting 
             currentToggle={$hotkeyToggle} 
             currentCopy={$hotkeyCopy}
             currentSnip={$hotkeySnip}
+            currentPrompt={$customPrompt}
             onToggleChange={handleHotkeyToggleChange} 
             onCopyChange={handleHotkeyCopyChange}
             onSnipChange={handleHotkeySnipChange}
+            onPromptChange={handlePromptChange}
           />
 
           <WindowSizeSetting 

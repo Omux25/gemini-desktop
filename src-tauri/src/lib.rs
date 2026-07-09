@@ -21,6 +21,7 @@ pub fn run() {
         .manage(app_state)
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_autostart::Builder::new().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(
             tauri_plugin_window_state::Builder::new()
                 .with_state_flags(
@@ -46,6 +47,7 @@ pub fn run() {
             ipc::system::restart_app,
             ipc::settings::set_smooth_mode,
             ipc::settings::set_auto_hide,
+            ipc::settings::set_custom_prompt,
             ipc::settings::load_settings,
             ipc::settings::save_settings,
             ipc::window::frontend_ready

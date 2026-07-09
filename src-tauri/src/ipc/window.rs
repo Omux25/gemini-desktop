@@ -123,6 +123,12 @@ pub fn webview_reload(app: tauri::AppHandle) {
 #[tauri::command]
 pub fn inject_text(app: tauri::AppHandle, text: String) {
     if let Some(webview) = app.get_webview("gemini") {
+        let mut template = app.state::<crate::state::AppState>().custom_prompt.lock().unwrap().clone();
+        if template.is_empty() {
+            template = "[Selected Text: \"{text}\"]".to_string();
+        }
+        let injected_text = format!("\n\n{}", template.replace("{text}", &text));
+        
         let script = format!(r#"
             (function() {{
                 function findFocusableInput(root) {{
@@ -145,7 +151,7 @@ pub fn inject_text(app: tauri::AppHandle, text: String) {
 
                 const promptElement = findFocusableInput(document);
                 if (promptElement) {{
-                    const textToInject = `\n\n[Selected Text: "${{`{}`}}"]`;
+                    const textToInject = `{}`;
                     
                     promptElement.focus();
                     try {{ promptElement.click(); }} catch (e) {{}}
@@ -182,7 +188,7 @@ pub fn inject_text(app: tauri::AppHandle, text: String) {
                     }} catch (e) {{}}
                 }}
             }})();
-        "#, text.replace("`", "\\`").replace("$", "\\$"));
+        "#, injected_text.replace("`", "\\`").replace("$", "\\$"));
         
         if let Err(e) = webview.eval(&script) { eprintln!("Failed to eval inject_text: {:?}", e); }
     }

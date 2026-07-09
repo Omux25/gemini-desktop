@@ -9,6 +9,7 @@
   import WebviewContainer from './components/WebviewContainer.svelte';
   import { isSettingsVisible, hydrateSettings, windowSize, isLocked, CONSTANTS } from './store';
   import { settingsService } from './services/settingsService';
+  import { updaterService } from './services/updaterService';
 
   const appWindow = getCurrentWindow();
 
@@ -18,6 +19,9 @@
     
     // Tell Rust backend we are ready to show the window gracefully
     await invoke('frontend_ready');
+
+    // Silently check for updates in the background on boot
+    updaterService.checkForUpdates().catch(console.error);
 
     // Global event listeners
     const unlistenHide = await listen('request-hide', async () => {
@@ -44,6 +48,7 @@
 </script>
 
 <Titlebar />
+
 <SettingsModal />
 <WebviewContainer />
 

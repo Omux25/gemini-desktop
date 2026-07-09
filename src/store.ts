@@ -15,6 +15,9 @@ export const CONSTANTS = {
         DEFAULT_TOGGLE: 'Alt+Space',
         DEFAULT_COPY: 'Alt+C',
         DEFAULT_SNIP: 'Alt+S'
+    },
+    PROMPTS: {
+        DEFAULT_SELECTION: '\n\n[Selected Text: "{text}"]'
     }
 };
 
@@ -23,6 +26,7 @@ export const isSettingsVisible = writable(false);
 export const hotkeyToggle = writable(CONSTANTS.HOTKEYS.DEFAULT_TOGGLE);
 export const hotkeyCopy = writable(CONSTANTS.HOTKEYS.DEFAULT_COPY);
 export const hotkeySnip = writable(CONSTANTS.HOTKEYS.DEFAULT_SNIP);
+export const customPrompt = writable(CONSTANTS.PROMPTS.DEFAULT_SELECTION);
 export const windowSize = writable('tall');
 export const isPinned = writable(false);
 export const isLocked = writable(false);
@@ -70,7 +74,19 @@ export async function hydrateSettings() {
             await getCurrentWindow().setResizable(!settings.isLocked);
         }
 
-        if (settings.isStartup !== undefined) isStartup.set(settings.isStartup);
+        if (settings.customPrompt !== undefined) {
+            customPrompt.set(settings.customPrompt);
+            await invoke('set_custom_prompt', { prompt: settings.customPrompt }).catch(console.error);
+        }
+
+        if (settings.isStartup !== undefined) {
+            isStartup.set(settings.isStartup);
+            if (settings.isStartup) {
+                // Self-heal the registry key on every boot just in case the portable executable was moved
+                const { enable } = await import('@tauri-apps/plugin-autostart');
+                await enable().catch(console.error);
+            }
+        }
         if (settings.isSmoothMode !== undefined) isSmoothMode.set(settings.isSmoothMode);
         
         if (settings.isAutoHide !== undefined) {

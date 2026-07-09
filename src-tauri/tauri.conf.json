@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Gemini Desktop",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "identifier": "com.omux2.geminidesktop",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -22,6 +22,14 @@
     ],
     "security": {
       "csp": null
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://raw.githubusercontent.com/Omux25/gemini-desktop/main/updater.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE4QzY5ODQ1OTI1MEQyNjMKUldSajBsQ1NSWmpHcU9PWEJmbGdBdHR0N3poV0NVWmpjZ1paeGtqSERoTmJCdG9JOUg1REZwcFEK"
     }
   },
   "bundle": {

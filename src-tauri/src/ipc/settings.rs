@@ -15,6 +15,14 @@ pub fn set_auto_hide(state: tauri::State<'_, AppState>, enabled: bool) -> Result
 }
 
 #[tauri::command]
+pub fn set_custom_prompt(state: tauri::State<'_, AppState>, prompt: String) -> Result<(), String> {
+    if let Ok(mut locked) = state.custom_prompt.lock() {
+        *locked = prompt;
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub fn change_hotkey(app: tauri::AppHandle, state: tauri::State<'_, AppState>, action: String, old_hotkey: String, new_hotkey: String) -> Result<(), String> {
     use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
     

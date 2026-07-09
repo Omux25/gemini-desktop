@@ -13,6 +13,7 @@ pub struct AppState {
     pub hotkey_toggle: Mutex<String>,
     pub hotkey_copy: Mutex<String>,
     pub hotkey_snip: Mutex<String>,
+    pub custom_prompt: Mutex<String>,
 }
 
 impl Default for AppState {
@@ -29,6 +30,7 @@ impl Default for AppState {
             hotkey_toggle: Mutex::new(String::new()),
             hotkey_copy: Mutex::new(String::new()),
             hotkey_snip: Mutex::new(String::new()),
+            custom_prompt: Mutex::new(String::new()),
         }
     }
 }
