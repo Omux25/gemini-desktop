@@ -125,14 +125,61 @@ pub fn inject_text(app: tauri::AppHandle, text: String) {
     if let Some(webview) = app.get_webview("gemini") {
         let script = format!(r#"
             (function() {{
-                const textToInject = `\n\n[Selected Text: "${{`{}`}}"]`;
-                const promptElement = document.querySelector('rich-textarea')?.shadowRoot?.querySelector('p');
+                function findFocusableInput(root) {{
+                    let input = root.querySelector('rich-textarea div[contenteditable="true"]') 
+                             || root.querySelector('rich-textarea p')
+                             || root.querySelector('rich-textarea [contenteditable="true"]')
+                             || root.querySelector('textarea') 
+                             || root.querySelector('[role="textbox"]')
+                             || root.querySelector('[contenteditable="true"]');
+                    if (input) return input;
+                    const allElements = root.querySelectorAll('*');
+                    for (const el of allElements) {{
+                        if (el.shadowRoot) {{
+                            const found = findFocusableInput(el.shadowRoot);
+                            if (found) return found;
+                        }}
+                    }}
+                    return null;
+                }}
+
+                const promptElement = findFocusableInput(document);
                 if (promptElement) {{
-                    promptElement.textContent += textToInject;
+                    const textToInject = `\n\n[Selected Text: "${{`{}`}}"]`;
                     
-                    // Dispatch input event so the React/Angular framework detects the change
-                    const inputEvent = new Event('input', {{ bubbles: true }});
-                    promptElement.dispatchEvent(inputEvent);
+                    promptElement.focus();
+                    try {{ promptElement.click(); }} catch (e) {{}}
+                    
+                    // We use execCommand because it flawlessly simulates user input 
+                    // and triggers all React/Angular framework events automatically
+                    const success = document.execCommand('insertText', false, textToInject);
+                    
+                    // Fallback if execCommand fails
+                    if (!success) {{
+                        if (promptElement.value !== undefined) {{
+                            promptElement.value += textToInject;
+                        }} else {{
+                            promptElement.textContent += textToInject;
+                        }}
+                        const inputEvent = new Event('input', {{ bubbles: true }});
+                        promptElement.dispatchEvent(inputEvent);
+                    }}
+                    
+                    // Move cursor to the beginning so the user can type their prompt
+                    try {{
+                        if (promptElement.setSelectionRange) {{
+                            // For textarea or input
+                            promptElement.setSelectionRange(0, 0);
+                        }} else {{
+                            // For contenteditable div/p
+                            const range = document.createRange();
+                            const sel = window.getSelection();
+                            range.setStart(promptElement, 0);
+                            range.collapse(true);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        }}
+                    }} catch (e) {{}}
                 }}
             }})();
         "#, text.replace("`", "\\`").replace("$", "\\$"));
@@ -185,6 +232,11 @@ pub fn grab_text_and_toggle_window(app: &tauri::AppHandle) {
     
     use enigo::{Enigo, Key, Keyboard, Settings, Direction};
     if let Ok(mut enigo) = Enigo::new(&Settings::default()) {
+        // Force release modifiers that might be held down from the global hotkey
+        let _ = enigo.key(Key::Alt, Direction::Release);
+        let _ = enigo.key(Key::Shift, Direction::Release);
+        let _ = enigo.key(Key::Meta, Direction::Release);
+
         let _ = enigo.key(Key::Control, Direction::Press);
         let _ = enigo.key(Key::Unicode('c'), Direction::Click);
         let _ = enigo.key(Key::Control, Direction::Release);

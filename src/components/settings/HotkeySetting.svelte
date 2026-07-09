@@ -38,7 +38,7 @@
     </div>
     <div class="pill-group">
         {#each copyHotkeys as hk}
-            <button class="pill" class:active={currentCopy === hk} onclick={() => onCopyChange(hk)}>
+            <button class="pill" class:active={currentCopy === hk.replace(' (Global)', '')} onclick={() => onCopyChange(hk.replace(' (Global)', ''))}>
                 {hk}
             </button>
         {/each}
@@ -52,7 +52,7 @@
     </div>
     <div class="pill-group">
         {#each snipHotkeys as hk}
-            <button class="pill" class:active={currentSnip === hk} onclick={() => onSnipChange(hk)}>
+            <button class="pill" class:active={currentSnip === hk.replace(' (Global)', '')} onclick={() => onSnipChange(hk.replace(' (Global)', ''))}>
                 {hk}
             </button>
         {/each}
