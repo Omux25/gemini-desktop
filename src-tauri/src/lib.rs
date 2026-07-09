@@ -131,9 +131,9 @@ pub fn run() {
             
             if let Ok(key) = default_snip.parse::<Shortcut>() {
                 if !app.global_shortcut().is_registered(key) {
-                    let _ = app.global_shortcut().on_shortcut(key, move |_app_handle, _shortcut, event| {
+                    let _ = app.global_shortcut().on_shortcut(key, move |app_handle, _shortcut, event| {
                         if event.state() == ShortcutState::Released {
-                            // crate::ipc::window::start_snip_mode(app_handle); // Step 3
+                            crate::ipc::window::start_snip_mode(app_handle);
                         }
                     });
                 }

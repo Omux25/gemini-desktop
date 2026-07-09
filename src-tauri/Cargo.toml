@@ -32,6 +32,9 @@ tokio = { version = "1.52.3", features = ["time"] }
 tauri-plugin-store = "~2"
 enigo = "0.2"
 tauri-plugin-clipboard-manager = "2"
+arboard = "3"
+image = "0.25.1"
+base64 = "0.22.1"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-autostart = "2"

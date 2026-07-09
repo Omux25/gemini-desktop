@@ -33,7 +33,7 @@ pub fn change_hotkey(app: tauri::AppHandle, state: tauri::State<'_, AppState>, a
                     match action_clone.as_str() {
                         "toggle" => crate::ipc::window::toggle_window(app_handle),
                         "copy" => crate::ipc::window::grab_text_and_toggle_window(app_handle),
-                        "snip" => (), // To be implemented in Step 3
+                        "snip" => crate::ipc::window::start_snip_mode(app_handle),
                         _ => (),
                     }
                 }

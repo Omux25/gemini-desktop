@@ -254,3 +254,107 @@ pub fn grab_text_and_toggle_window(app: &tauri::AppHandle) {
     
     toggle_window(app);
 }
+
+pub fn start_snip_mode(app: &tauri::AppHandle) {
+    use tauri::Manager;
+    let main_windows: Vec<tauri::Window> = app.windows().values().cloned().collect();
+    for window in &main_windows {
+        let _ = window.hide();
+    }
+    std::thread::sleep(std::time::Duration::from_millis(50));
+
+    #[cfg(target_os = "windows")]
+    let old_sequence = unsafe { winapi::um::winuser::GetClipboardSequenceNumber() };
+    #[cfg(not(target_os = "windows"))]
+    let old_sequence = 0; // Fallback
+    
+    // Win + Shift + S
+    #[cfg(target_os = "windows")]
+    unsafe {
+        use winapi::um::winuser::{keybd_event, VK_LWIN, VK_SHIFT, VK_MENU, KEYEVENTF_KEYUP};
+        
+        // Force release Alt just in case
+        keybd_event(VK_MENU as u8, 0, KEYEVENTF_KEYUP, 0);
+        
+        keybd_event(VK_LWIN as u8, 0, 0, 0);
+        keybd_event(VK_SHIFT as u8, 0, 0, 0);
+        keybd_event(0x53, 0, 0, 0); // S key
+        keybd_event(0x53, 0, KEYEVENTF_KEYUP, 0);
+        keybd_event(VK_SHIFT as u8, 0, KEYEVENTF_KEYUP, 0);
+        keybd_event(VK_LWIN as u8, 0, KEYEVENTF_KEYUP, 0);
+    }
+    
+    let app_clone = app.clone();
+    tauri::async_runtime::spawn(async move {
+        for _ in 0..100 { // 100 * 150ms = 15 seconds timeout
+            tokio::time::sleep(std::time::Duration::from_millis(150)).await;
+            
+            #[cfg(target_os = "windows")]
+            let new_sequence = unsafe { winapi::um::winuser::GetClipboardSequenceNumber() };
+            #[cfg(not(target_os = "windows"))]
+            let new_sequence = 1; // Fallback
+            
+            if new_sequence != old_sequence {
+                if let Ok(mut clipboard) = arboard::Clipboard::new() {
+                    if let Ok(new_image) = clipboard.get_image() {
+                        crate::ipc::window::toggle_window(&app_clone);
+                        
+                        // Convert arboard raw pixels to a Base64 PNG string
+                        use image::{ImageBuffer, RgbaImage};
+                        let image_buffer: Option<RgbaImage> = ImageBuffer::from_raw(
+                            new_image.width as u32,
+                            new_image.height as u32,
+                            new_image.bytes.into_owned(),
+                        );
+                        
+                        if let Some(img) = image_buffer {
+                            let mut cursor = std::io::Cursor::new(Vec::new());
+                            if img.write_to(&mut cursor, image::ImageFormat::Png).is_ok() {
+                                use base64::{Engine as _, engine::general_purpose};
+                                let b64 = general_purpose::STANDARD.encode(cursor.into_inner());
+                                
+                                use tauri::Manager;
+                                if let Some(webview) = app_clone.get_webview("gemini") {
+                                    let script = format!(r#"
+                                        (function() {{
+                                            function findFocusableInput(root) {{
+                                                let input = root.querySelector('rich-textarea div[contenteditable="true"], textarea, input[type="text"], [role="textbox"]');
+                                                if (input) return input;
+                                                
+                                                const children = Array.from(root.children);
+                                                for (const child of children) {{
+                                                    if (child.shadowRoot) {{
+                                                        const found = findFocusableInput(child.shadowRoot);
+                                                        if (found) return found;
+                                                    }}
+                                                }}
+                                                return null;
+                                            }}
+                                            
+                                            const inputElement = findFocusableInput(document.body);
+                                            if (inputElement) {{
+                                                fetch('data:image/png;base64,{}')
+                                                    .then(res => res.blob())
+                                                    .then(blob => {{
+                                                        const filename = `screenshot_${{Date.now()}}.png`;
+                                                        const file = new File([blob], filename, {{ type: 'image/png' }});
+                                                        const dt = new DataTransfer();
+                                                        dt.items.add(file);
+                                                        const pasteEvent = new ClipboardEvent('paste', {{ clipboardData: dt, bubbles: true }});
+                                                        inputElement.dispatchEvent(pasteEvent);
+                                                        inputElement.focus();
+                                                    }});
+                                            }}
+                                        }})();
+                                    "#, b64);
+                                    let _ = webview.eval(&script);
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    });
+}
