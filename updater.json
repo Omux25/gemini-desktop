@@ -1,0 +1,11 @@
+{
+  "version": "v2.1.0",
+  "notes": "Native In-App Auto-Updater & Smart Selection Customization",
+  "pub_date": "2026-07-09T15:46:25Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSajBsQ1NSWmpHcUNHaHJjMFJodVFiSG5EaEYwU0k5TmdIN3h3NnlGK1V6TDdHY3Q4RkNiNUc5S2ZBYW83a0M5a1NnSWU0M24zYzZkSWY1VHltUHlBK2EzbXpyKzM3NUEwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjExOTg2CWZpbGU6R2VtaW5pLURlc2t0b3AtU2V0dXAubnNpcy56aXAKditGSHlrREx5VjNPSm82RUxIL28vbzBGcytPdFNlNzdld24zMXB2S3UyWGd4dHBsUm5NV3BiVVhCc0IrRzNVbFdqSXlXUmY1T0s3U3Ixc2twK1lBREE9PQo=",
+      "url": "https://github.com/Omux25/gemini-desktop/releases/download/v2.1.0/Gemini-Desktop-Setup.nsis.zip"
+    }
+  }
+}
