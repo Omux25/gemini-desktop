@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 *.exe
 Gemini-Desktop-Portable-*.exe
+updater.key*
+.env
