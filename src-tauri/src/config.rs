@@ -1,10 +1,18 @@
+pub const APP_ID: &str = "com.omux25.geminidesktop";
+
+pub fn get_settings_file_path() -> Option<std::path::PathBuf> {
+    dirs::data_dir().map(|mut path| {
+        path.push(APP_ID);
+        path.push("settings.json");
+        path
+    })
+}
+
 pub fn load_smooth_mode() -> bool {
     let mut is_smooth_mode = false;
     #[cfg(target_os = "windows")]
     {
-        if let Some(mut file_path) = dirs::data_dir() {
-            file_path.push("com.omux2.geminidesktop");
-            file_path.push("settings.json");
+        if let Some(file_path) = get_settings_file_path() {
             if let Ok(contents) = std::fs::read_to_string(file_path) {
                 if let Ok(json) = serde_json::from_str::<serde_json::Value>(&contents) {
                     if let Some(val) = json.get("isSmoothMode") {

@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { check } from '@tauri-apps/plugin-updater';
+import { check, Update, DownloadEvent } from '@tauri-apps/plugin-updater';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
 
@@ -10,7 +10,7 @@ export const updateProgress = writable({ downloaded: 0, total: 0 });
 export const updateVersion = writable<string>('');
 export const updateNotes = writable<string>('');
 
-let updateInstance: any = null;
+let updateInstance: Update | null = null;
 let isPortable = false;
 let portableDownloadedPath = "";
 let unlistenProgress: UnlistenFn | null = null;
@@ -71,7 +71,8 @@ export const updaterService = {
                 updateState.set('ready');
             } else {
                 // Native installed logic
-                await updateInstance.download((event: any) => {
+                if (!updateInstance) return;
+                await updateInstance.download((event: DownloadEvent) => {
                     switch (event.event) {
                         case 'Started':
                             contentLength = event.data.contentLength || 0;

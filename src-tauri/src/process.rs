@@ -2,14 +2,7 @@ use std::sync::atomic::Ordering;
 use tauri::Manager;
 use crate::state::AppState;
 
-/// The `process` module provides low-level OS process management and optimization utilities.
-/// 
-/// This is particularly useful for Tauri applications running Chromium (Webview2),
-/// which can consume significant memory while idling in the background. 
-/// 
-/// The functions here interact directly with the OS APIs (e.g., Windows API) to 
-/// trim the process working set, moving inactive memory pages to the system pagefile
-/// when the application is minimized or hidden.
+/// Provides process working set trimming via OS APIs to optimize idle memory footprint.
 
 #[cfg(target_os = "windows")]
 mod windows_api {

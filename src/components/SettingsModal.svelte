@@ -1,7 +1,7 @@
 <script lang="ts">
   import { 
     isSettingsVisible, hotkeyToggle, hotkeyCopy, hotkeySnip, customPrompt, windowSize, 
-    isPinned, isLocked, isStartup, isSmoothMode, isAutoHide, CONSTANTS 
+    isPinned, isLocked, isStartup, isSmoothMode, isAutoHide, CONSTANTS, type WindowSizeKey 
   } from '../store';
   import { updaterService, updateState, updateProgress, updateVersion, updateNotes } from '../services/updaterService';
   import { settingsService } from '../services/settingsService';
@@ -53,9 +53,9 @@
     settingsService.setCustomPrompt(newPrompt).catch(console.error);
   }
 
-  function handleSizeChange(sizeId: string) {
+  function handleSizeChange(sizeId: WindowSizeKey) {
     windowSize.set(sizeId);
-    settingsService.setWindowSize(sizeId as any, $isLocked).catch(console.error);
+    settingsService.setWindowSize(sizeId, $isLocked).catch(console.error);
   }
 
   function handlePinnedChange(pinned: boolean) {
@@ -190,22 +190,22 @@
     backdrop-filter: blur(16px);
     z-index: 100;
     display: flex;
-    justify-content: center; /* Center horizontally */
-    align-items: flex-start; /* Crucial: Prevents flexbox from clipping bottom padding when scrolling */
+    justify-content: center;
+    align-items: flex-start;
     color: #e3e3e3;
     overflow-y: auto;
-    overflow-x: hidden; /* CRITICAL FIX: Guarantee no horizontal scrollbars */
+    overflow-x: hidden;
     font-family: 'Segoe UI', system-ui, sans-serif;
     animation: fadeIn 0.2s ease-out;
 }
 
 .settings-modal-inner {
     width: 100%;
-    max-width: 600px; /* Luxurious breathing room */
-    padding: 32px 24px 24px 24px; /* Perfectly balanced bottom padding */
+    max-width: 600px;
+    padding: 32px 24px 24px 24px;
     display: flex;
     flex-direction: column;
-    box-sizing: border-box; /* CRITICAL FIX: prevents horizontal scrollbar on narrow window */
+    box-sizing: border-box;
 }
 
 .settings-modal::-webkit-scrollbar { width: 6px; }

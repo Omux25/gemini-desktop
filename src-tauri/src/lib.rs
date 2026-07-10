@@ -77,14 +77,12 @@ pub fn run() {
                     let last_shown = state.last_shown_time.load(Ordering::Acquire);
                     let startup = state.startup_time.load(Ordering::Acquire);
                     
-                    // Do not auto-hide for the first 3 seconds after the app launches.
-                    // This prevents terminal windows or other background startup processes from instantly stealing focus and hiding the app.
+                    // Guard against early startup transients.
                     if now.saturating_sub(startup) < 3000 {
                         return;
                     }
                     
-                    // Reduced grace period to 150ms. 
-                    // This prevents the bug where clicking away quickly traps the window in an unfocused state.
+                    // Process auto-hide transitions outside rapid focus loss window.
                     if now.saturating_sub(last_shown) > 150 {
                         let is_pinned = state.window_pinned.load(Ordering::Acquire);
                         
@@ -99,9 +97,7 @@ pub fn run() {
                             crate::process::optimize_memory(app.clone());
                         }
                     } else {
-                        // OS Glitch: It lost focus immediately.
-                        // We must reclaim focus so winit doesn't permanently trap the window in an unfocused state!
-                        // Calling window.set_focus() instead of WinAPI SetFocus ensures the WebView child gets the focus
+                        // Reclaim focus when lost within threshold to maintain clean window state.
                         let _ = window.set_focus();
                     }
                 }

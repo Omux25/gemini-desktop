@@ -1,42 +1,26 @@
 (function() {
-    function findFocusableInput(root) {
-        // Check current root
-        let input = root.querySelector('rich-textarea div[contenteditable="true"]') 
-                 || root.querySelector('rich-textarea [contenteditable="true"]')
-                 || root.querySelector('textarea') 
-                 || root.querySelector('[role="textbox"]')
-                 || root.querySelector('[contenteditable="true"]');
-                 
-        if (input) return input;
-
-        // Traverse shadow DOMs
-        const allElements = root.querySelectorAll('*');
-        for (const el of allElements) {
-            if (el.shadowRoot) {
-                const found = findFocusableInput(el.shadowRoot);
-                if (found) return found;
-            }
+    function tryFocus() {
+        const input = typeof findFocusableInput === 'function' ? findFocusableInput(document) : (window.__findFocusableInput ? window.__findFocusableInput(document) : null);
+        if (input && input.offsetParent !== null) {
+            input.focus();
+            try { input.click(); } catch (e) {}
+            return true;
         }
-        return null;
+        return false;
     }
 
-    let attempts = 0;
-    const interval = setInterval(() => {
-        attempts++;
-        const input = findFocusableInput(document);
-        if (input && input.offsetParent !== null) { // Make sure it's visible
-            input.focus();
-            
-            // Sometimes rich text editors need a click event to fully activate
-            try {
-                input.click();
-            } catch (e) {}
+    if (tryFocus()) return;
 
-            clearInterval(interval);
+    const observer = new MutationObserver(() => {
+        if (tryFocus()) {
+            observer.disconnect();
+            clearTimeout(timeout);
         }
-        
-        if (attempts > 20) {
-            clearInterval(interval); // Stop trying after 2 seconds
-        }
-    }, 100);
+    });
+
+    observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+
+    const timeout = setTimeout(() => {
+        observer.disconnect();
+    }, 2000);
 })();

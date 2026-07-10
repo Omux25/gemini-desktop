@@ -1,14 +1,15 @@
 <script lang="ts">
     import SettingGroup from './SettingGroup.svelte';
     import SettingRow from './SettingRow.svelte';
+    import type { WindowSizeKey } from '../../store';
 
     interface Props {
         currentSize: string;
-        onChange: (sizeId: string) => void;
+        onChange: (sizeId: WindowSizeKey) => void;
     }
     let { currentSize, onChange }: Props = $props();
 
-    const sizes = [
+    const sizes: { id: WindowSizeKey; label: string }[] = [
         { id: 'compact', label: 'Compact' },
         { id: 'standard', label: 'Standard' },
         { id: 'tall', label: 'Tall' },

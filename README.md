@@ -23,16 +23,17 @@
 
 <br>
 
-Welcome to the next generation of **Gemini Desktop**. Completely re-architected from the ground up, moving away from Electron to a blazingly fast, lightweight **Rust & Tauri** core. It brings Google Gemini out of your browser tabs and turns it into a native, powerful desktop assistant.
+Welcome to the next generation of **Gemini Desktop**. Completely re-architected from the ground up into a blazingly fast, lightweight **Rust & Tauri v2** core with a **Svelte 5** reactive interface. It brings Google Gemini out of your browser tabs and turns it into an enterprise-grade native desktop assistant.
 
-## ✨ Features
+## ✨ Features & Architecture
 
 - **Smart Global Hotkey:** Instantly summon or hide the chat window from anywhere without interrupting your workflow.
   - Global Default: `Alt + Space`
-- **Always on Top (Pinned):** Pin the window so you can easily reference Gemini while gaming, coding, or working. 
-- **Smooth Mode (Memory Optimization):** Advanced dynamic Webview2 flag injection (`--enable-low-end-device-mode`, `--renderer-process-limit=1`) alongside a native OS memory flushing algorithm (`EmptyWorkingSet`) to achieve extremely low RAM footprints when idling.
-- **Native System Tray:** Runs quietly in the background, completely out of your way until summoned.
-- **Enterprise-Grade Architecture:** Features a modular Svelte 5 frontend with strict service-layer isolation and a pure Rust IPC architecture. 
+- **Native Windows Snipping Tool Integration:** Press `Alt + S` (`Win + Shift + S`) to capture regions of your screen and automatically inject Base64 images right into the Gemini prompt input using event-driven clipboard monitoring.
+- **Always on Top (Pinned):** Pin the window so you can easily reference Gemini while gaming, coding, or taking notes.
+- **Smooth Mode (Memory & Low-End Optimization):** Advanced dynamic Webview2 flag injection (`--enable-low-end-device-mode`, `--renderer-process-limit=1`) alongside a native OS memory flushing algorithm (`EmptyWorkingSet`) to achieve extremely low RAM footprints when idling.
+- **Event-Driven DOM Focus Engine (`MutationObserver`):** Zero interval polling loops. Native mutation observing ensures input focus exactly when DOM components mount inside the Webview.
+- **100% Type-Safe & Modular Architecture:** Strict Svelte 5 TypeScript service-layer isolation (`settingsService`, `windowService`, `updaterService`) paired with domain-specific Rust IPC modules (`ipc::window`, `ipc::settings`, `ipc::system`). Zero `any` or `@ts-ignore` bypasses. 
 
 ## 📥 Download & Install
 

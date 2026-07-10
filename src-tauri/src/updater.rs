@@ -73,7 +73,7 @@ pub async fn download_portable_update(app: AppHandle, url: String) -> Result<Str
 }
 
 #[tauri::command]
-pub fn install_portable_update(app: AppHandle, downloaded_path: String) -> Result<(), String> {
+pub fn install_portable_update(_app: AppHandle, downloaded_path: String) -> Result<(), String> {
     let current_exe = env::current_exe().map_err(|e| e.to_string())?;
     let current_dir = current_exe.parent().unwrap_or(std::path::Path::new(""));
     let bat_path = current_dir.join("update_gemini.bat");

@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window';
 import { enable as enableAutostart, disable as disableAutostart } from '@tauri-apps/plugin-autostart';
-import { CONSTANTS, hotkeyToggle, hotkeyCopy, hotkeySnip, customPrompt, windowSize, isPinned, isLocked, isStartup, isSmoothMode, isAutoHide } from '../store';
+import { CONSTANTS, type WindowSizeKey, hotkeyToggle, hotkeyCopy, hotkeySnip, customPrompt, windowSize, isPinned, isLocked, isStartup, isSmoothMode, isAutoHide } from '../store';
 import { get } from 'svelte/store';
 
 const appWindow = getCurrentWindow();
@@ -33,7 +33,7 @@ export const settingsService = {
     await saveAllSettings();
   },
 
-  async setWindowSize(sizeId: keyof typeof CONSTANTS.WINDOW_SIZES, isLockedState: boolean) {
+  async setWindowSize(sizeId: WindowSizeKey, isLockedState: boolean) {
     const preset = CONSTANTS.WINDOW_SIZES[sizeId];
     if (preset) {
       await appWindow.setResizable(true);

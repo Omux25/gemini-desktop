@@ -78,9 +78,12 @@ pub fn sync_pinned(state: tauri::State<'_, AppState>, pinned: bool) {
     state.window_pinned.store(pinned, Ordering::Relaxed);
 }
 
+const FIND_INPUT_SCRIPT: &str = include_str!("../scripts/find_input.js");
 const WEBVIEW_BACK_SCRIPT: &str = include_str!("../scripts/webview_back.js");
 const WEBVIEW_RELOAD_SCRIPT: &str = include_str!("../scripts/webview_reload.js");
 const WEBVIEW_FOCUS_SCRIPT: &str = include_str!("../scripts/webview_focus.js");
+const WEBVIEW_INJECT_SCRIPT: &str = include_str!("../scripts/webview_inject.js");
+const WEBVIEW_SNIP_SCRIPT: &str = include_str!("../scripts/webview_snip.js");
 
 #[tauri::command]
 pub fn webview_back(app: tauri::AppHandle) {
@@ -106,7 +109,8 @@ pub fn show_webview(app: tauri::AppHandle) {
     if let Some(webview) = app.get_webview("gemini") {
         if let Err(e) = webview.show() { eprintln!("Failed to show webview: {:?}", e); }
         let _ = webview.set_focus();
-        if let Err(e) = webview.eval(WEBVIEW_FOCUS_SCRIPT) { eprintln!("Failed to eval focus script: {:?}", e); }
+        let script = format!("{}\n{}", FIND_INPUT_SCRIPT, WEBVIEW_FOCUS_SCRIPT);
+        if let Err(e) = webview.eval(&script) { eprintln!("Failed to eval focus script: {:?}", e); }
         
         let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
         app.state::<crate::state::AppState>().last_shown_time.store(now, std::sync::atomic::Ordering::Release);
@@ -129,67 +133,11 @@ pub fn inject_text(app: tauri::AppHandle, text: String) {
         }
         let injected_text = format!("\n\n{}", template.replace("{text}", &text));
         
-        let script = format!(r#"
-            (function() {{
-                function findFocusableInput(root) {{
-                    let input = root.querySelector('rich-textarea div[contenteditable="true"]') 
-                             || root.querySelector('rich-textarea p')
-                             || root.querySelector('rich-textarea [contenteditable="true"]')
-                             || root.querySelector('textarea') 
-                             || root.querySelector('[role="textbox"]')
-                             || root.querySelector('[contenteditable="true"]');
-                    if (input) return input;
-                    const allElements = root.querySelectorAll('*');
-                    for (const el of allElements) {{
-                        if (el.shadowRoot) {{
-                            const found = findFocusableInput(el.shadowRoot);
-                            if (found) return found;
-                        }}
-                    }}
-                    return null;
-                }}
-
-                const promptElement = findFocusableInput(document);
-                if (promptElement) {{
-                    const textToInject = `{}`;
-                    
-                    promptElement.focus();
-                    try {{ promptElement.click(); }} catch (e) {{}}
-                    
-                    // We use execCommand because it flawlessly simulates user input 
-                    // and triggers all React/Angular framework events automatically
-                    const success = document.execCommand('insertText', false, textToInject);
-                    
-                    // Fallback if execCommand fails
-                    if (!success) {{
-                        if (promptElement.value !== undefined) {{
-                            promptElement.value += textToInject;
-                        }} else {{
-                            promptElement.textContent += textToInject;
-                        }}
-                        const inputEvent = new Event('input', {{ bubbles: true }});
-                        promptElement.dispatchEvent(inputEvent);
-                    }}
-                    
-                    // Move cursor to the beginning so the user can type their prompt
-                    try {{
-                        if (promptElement.setSelectionRange) {{
-                            // For textarea or input
-                            promptElement.setSelectionRange(0, 0);
-                        }} else {{
-                            // For contenteditable div/p
-                            const range = document.createRange();
-                            const sel = window.getSelection();
-                            range.setStart(promptElement, 0);
-                            range.collapse(true);
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                        }}
-                    }} catch (e) {{}}
-                }}
-            }})();
-        "#, injected_text.replace("`", "\\`").replace("$", "\\$"));
-        
+        let escaped_text = serde_json::to_string(&injected_text).unwrap_or_else(|_| "\"\"".to_string());
+        let script = format!(
+            "window.__gemini_injected_text = {};\n{}\n{}",
+            escaped_text, FIND_INPUT_SCRIPT, WEBVIEW_INJECT_SCRIPT
+        );
         if let Err(e) = webview.eval(&script) { eprintln!("Failed to eval inject_text: {:?}", e); }
     }
 }
@@ -220,24 +168,20 @@ pub fn toggle_window(app: &tauri::AppHandle) {
             tauri::async_runtime::spawn(async move {
                 #[cfg(target_os = "windows")]
                 {
-                    use winapi::um::winuser::GetAsyncKeyState;
-                    // Wait until ALL physical keys are released (max 1.5 seconds)
-                    // This prevents "leaky KeyUp" bugs where the underlying application (e.g. YouTube)
-                    // receives the KeyUp event if we hide the window while the user is still holding keys.
-                    for _ in 0..150 { // 150 * 10ms = 1.5s
-                        let mut any_down = false;
-                        for i in 8..256 { // Skip mouse buttons (1-7)
-                            unsafe {
-                                if GetAsyncKeyState(i) < 0 {
-                                    any_down = true;
-                                    break;
-                                }
+                    use winapi::um::winuser::{GetAsyncKeyState, VK_MENU, VK_CONTROL, VK_SHIFT, VK_LWIN, VK_RWIN};
+                    // Await physical modifier release before window hiding to prevent OS hotkey leakage.
+                    for _ in 0..20 {
+                        unsafe {
+                            let mods_down = GetAsyncKeyState(VK_MENU) < 0
+                                || GetAsyncKeyState(VK_CONTROL) < 0
+                                || GetAsyncKeyState(VK_SHIFT) < 0
+                                || GetAsyncKeyState(VK_LWIN) < 0
+                                || GetAsyncKeyState(VK_RWIN) < 0;
+                            if !mods_down {
+                                break;
                             }
                         }
-                        if !any_down {
-                            break;
-                        }
-                        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+                        tokio::time::sleep(std::time::Duration::from_millis(25)).await;
                     }
                 }
                 
@@ -320,7 +264,8 @@ pub fn start_snip_mode(app: &tauri::AppHandle) {
     
     let app_clone = app.clone();
     tauri::async_runtime::spawn(async move {
-        for _ in 0..100 { // 100 * 150ms = 15 seconds timeout
+        // Poll clipboard sequence within a bounded 15-second capture window while Windows Snipping Tool is active.
+        for _ in 0..100 {
             tokio::time::sleep(std::time::Duration::from_millis(150)).await;
             
             #[cfg(target_os = "windows")]
@@ -349,38 +294,11 @@ pub fn start_snip_mode(app: &tauri::AppHandle) {
                                 
                                 use tauri::Manager;
                                 if let Some(webview) = app_clone.get_webview("gemini") {
-                                    let script = format!(r#"
-                                        (function() {{
-                                            function findFocusableInput(root) {{
-                                                let input = root.querySelector('rich-textarea div[contenteditable="true"], textarea, input[type="text"], [role="textbox"]');
-                                                if (input) return input;
-                                                
-                                                const children = Array.from(root.children);
-                                                for (const child of children) {{
-                                                    if (child.shadowRoot) {{
-                                                        const found = findFocusableInput(child.shadowRoot);
-                                                        if (found) return found;
-                                                    }}
-                                                }}
-                                                return null;
-                                            }}
-                                            
-                                            const inputElement = findFocusableInput(document.body);
-                                            if (inputElement) {{
-                                                fetch('data:image/png;base64,{}')
-                                                    .then(res => res.blob())
-                                                    .then(blob => {{
-                                                        const filename = `screenshot_${{Date.now()}}.png`;
-                                                        const file = new File([blob], filename, {{ type: 'image/png' }});
-                                                        const dt = new DataTransfer();
-                                                        dt.items.add(file);
-                                                        const pasteEvent = new ClipboardEvent('paste', {{ clipboardData: dt, bubbles: true }});
-                                                        inputElement.dispatchEvent(pasteEvent);
-                                                        inputElement.focus();
-                                                    }});
-                                            }}
-                                        }})();
-                                    "#, b64);
+                                    let escaped_b64 = serde_json::to_string(&b64).unwrap_or_else(|_| "\"\"".to_string());
+                                    let script = format!(
+                                        "window.__gemini_snip_b64 = {};\n{}\n{}",
+                                        escaped_b64, FIND_INPUT_SCRIPT, WEBVIEW_SNIP_SCRIPT
+                                    );
                                     let _ = webview.eval(&script);
                                 }
                             }

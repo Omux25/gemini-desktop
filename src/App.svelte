@@ -17,10 +17,7 @@
     // Load persisted settings
     await hydrateSettings();
     
-    // Tell Rust backend we are ready to show the window gracefully
     await invoke('frontend_ready');
-
-    // Silently check for updates in the background on boot
     updaterService.checkForUpdates().catch(console.error);
 
     // Global event listeners

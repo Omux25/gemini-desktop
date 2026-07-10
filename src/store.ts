@@ -17,9 +17,11 @@ export const CONSTANTS = {
         DEFAULT_SNIP: 'Alt+S'
     },
     PROMPTS: {
-        DEFAULT_SELECTION: '\n\n[Selected Text: "{text}"]'
+        DEFAULT_SELECTION: '[Selected Text: "{text}"]'
     }
 };
+
+export type WindowSizeKey = keyof typeof CONSTANTS.WINDOW_SIZES;
 
 // State stores
 export const isSettingsVisible = writable(false);
@@ -82,7 +84,7 @@ export async function hydrateSettings() {
         if (settings.isStartup !== undefined) {
             isStartup.set(settings.isStartup);
             if (settings.isStartup) {
-                // Self-heal the registry key on every boot just in case the portable executable was moved
+                // Ensure autostart registration points to current executable path.
                 const { enable } = await import('@tauri-apps/plugin-autostart');
                 await enable().catch(console.error);
             }
