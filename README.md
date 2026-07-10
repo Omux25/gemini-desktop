@@ -1,74 +1,174 @@
 <div align="center">
-  <img src="./public/icon.png" alt="Gemini Desktop Icon" width="128" />
+  <br>
+  <img src="./assets/hero_banner.jpg" alt="Gemini Desktop Hero" width="100%" />
+  <br>
+  <br>
+  <img src="./public/icon.png" alt="Gemini Desktop Icon" width="80" />
 
   <h1>Gemini Desktop</h1>
 
-  <p><strong>A highly optimized, enterprise-grade native desktop wrapper for Google Gemini.</strong></p>
+  <p><strong>A native, lightning-fast desktop client for Google Gemini — built with Rust & Tauri.</strong></p>
 
-  <a href="https://github.com/Omux25/gemini-desktop/releases/latest">
-    <img src="https://img.shields.io/github/v/release/Omux25/gemini-desktop?style=for-the-badge&color=007AFF&label=Latest%20Release" alt="Latest Release" />
-  </a>
-  <br>
-  <br>
-  <a href="https://github.com/Omux25/gemini-desktop/releases/latest">
-    <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows" />
-  </a>
-  <a href="https://github.com/Omux25/gemini-desktop/releases/latest">
-    <img src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white" alt="Rust Backend" />
-  </a>
-  <a href="https://github.com/Omux25/gemini-desktop/releases/latest">
-    <img src="https://img.shields.io/badge/Svelte-FF3E00?style=for-the-badge&logo=svelte&logoColor=white" alt="Svelte Frontend" />
-  </a>
+  <p>
+    <a href="https://github.com/Omux25/gemini-desktop/releases/latest">
+      <img src="https://img.shields.io/github/v/release/Omux25/gemini-desktop?style=for-the-badge&color=007AFF&label=Latest%20Release" alt="Latest Release" />
+    </a>
+    &nbsp;
+    <a href="https://github.com/Omux25/gemini-desktop/releases/latest">
+      <img src="https://img.shields.io/github/downloads/Omux25/gemini-desktop/total?style=for-the-badge&color=00C853&label=Downloads" alt="Downloads" />
+    </a>
+    &nbsp;
+    <img src="https://img.shields.io/github/license/Omux25/gemini-desktop?style=for-the-badge&color=FFD600&label=License" alt="License" />
+  </p>
+
+  <p>
+    <a href="https://github.com/Omux25/gemini-desktop/releases/latest">
+      <img src="https://img.shields.io/badge/Windows-0078D6?style=flat-square&logo=windows&logoColor=white" alt="Windows" />
+    </a>
+    &nbsp;
+    <img src="https://img.shields.io/badge/Rust-000000?style=flat-square&logo=rust&logoColor=white" alt="Rust" />
+    &nbsp;
+    <img src="https://img.shields.io/badge/Tauri_v2-24C8DB?style=flat-square&logo=tauri&logoColor=white" alt="Tauri v2" />
+    &nbsp;
+    <img src="https://img.shields.io/badge/Svelte_5-FF3E00?style=flat-square&logo=svelte&logoColor=white" alt="Svelte 5" />
+    &nbsp;
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  </p>
 </div>
 
 <br>
 
-Welcome to the next generation of **Gemini Desktop**. Completely re-architected from the ground up into a blazingly fast, lightweight **Rust & Tauri v2** core with a **Svelte 5** reactive interface. It brings Google Gemini out of your browser tabs and turns it into an enterprise-grade native desktop assistant.
+> **Gemini Desktop** takes Google Gemini out of your browser tabs and turns it into an always-available, system-wide native desktop assistant. Summon it instantly with a hotkey, inject selected text or screenshots directly into your prompt, and dismiss it just as fast — all from a lightweight Rust backend that idles at near-zero RAM.
 
-## ✨ Features & Architecture
+---
 
-- **Smart Global Hotkey:** Instantly summon or hide the chat window from anywhere without interrupting your workflow.
-  - Global Default: `Alt + Space`
-- **Native Windows Snipping Tool Integration:** Press `Alt + S` (`Win + Shift + S`) to capture regions of your screen and automatically inject Base64 images right into the Gemini prompt input using event-driven clipboard monitoring.
-- **Always on Top (Pinned):** Pin the window so you can easily reference Gemini while gaming, coding, or taking notes.
-- **Smooth Mode (Memory & Low-End Optimization):** Advanced dynamic Webview2 flag injection (`--enable-low-end-device-mode`, `--renderer-process-limit=1`) alongside a native OS memory flushing algorithm (`EmptyWorkingSet`) to achieve extremely low RAM footprints when idling.
-- **Event-Driven DOM Focus Engine (`MutationObserver`):** Zero interval polling loops. Native mutation observing ensures input focus exactly when DOM components mount inside the Webview.
-- **100% Type-Safe & Modular Architecture:** Strict Svelte 5 TypeScript service-layer isolation (`settingsService`, `windowService`, `updaterService`) paired with domain-specific Rust IPC modules (`ipc::window`, `ipc::settings`, `ipc::system`). Zero `any` or `@ts-ignore` bypasses. 
+## ⚡ Highlights
+
+<table>
+  <tr>
+    <td width="50%">
+      <h3>🎯 Instant Access</h3>
+      <p>Summon Gemini from anywhere with a global hotkey. No browser tab hunting. No context switching. Just press <kbd>Alt</kbd> + <kbd>Space</kbd> and start typing.</p>
+    </td>
+    <td width="50%">
+      <h3>📋 Smart Text Selection</h3>
+      <p>Highlight any text on your screen, press <kbd>Alt</kbd> + <kbd>C</kbd>, and it gets injected directly into Gemini's prompt — ready for analysis, translation, or explanation.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>✂️ Native Snipping Tool</h3>
+      <p>Press <kbd>Alt</kbd> + <kbd>S</kbd> to capture any region of your screen. The screenshot is automatically converted to Base64 and injected into Gemini's prompt input.</p>
+    </td>
+    <td width="50%">
+      <h3>📌 Always on Top</h3>
+      <p>Pin Gemini above all other windows. Perfect for referencing answers while coding, gaming, or taking notes. Toggle with a single click.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🪶 Near-Zero Memory Footprint</h3>
+      <p>Smooth Mode injects low-end Webview2 flags and flushes the working set via native OS calls. When minimized, Gemini Desktop can idle under 30 MB.</p>
+    </td>
+    <td width="50%">
+      <h3>🔄 Silent Auto-Updater</h3>
+      <p>Seamless in-app updates with a progress bar. No manual downloads. Works identically for both the installer and portable editions.</p>
+    </td>
+  </tr>
+</table>
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+| Shortcut | Action | Customizable |
+|----------|--------|:------------:|
+| <kbd>Alt</kbd> + <kbd>Space</kbd> | Toggle Gemini window | ✅ |
+| <kbd>Alt</kbd> + <kbd>C</kbd> | Smart Text Selection — grab highlighted text into Gemini | ✅ |
+| <kbd>Alt</kbd> + <kbd>S</kbd> | Snip & Send — capture screen region into Gemini | ✅ |
+| <kbd>Ctrl</kbd> + <kbd>,</kbd> | Open Settings | — |
+| <kbd>Alt</kbd> + <kbd>←</kbd> | Navigate back inside Gemini | — |
+
+---
 
 ## 📥 Download & Install
 
-Download the latest version for your operating system from the **[Releases Page](https://github.com/Omux25/gemini-desktop/releases)**.
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <h3>🖥️ Standard Installer</h3>
+      <p>Installs to Program Files with auto-start support and system tray integration.</p>
+      <a href="https://github.com/Omux25/gemini-desktop/releases/latest">
+        <img src="https://img.shields.io/badge/Download-Setup.exe-007AFF?style=for-the-badge" alt="Download Setup" />
+      </a>
+    </td>
+    <td align="center" width="50%">
+      <h3>📦 Portable Edition</h3>
+      <p>Single executable. No installation required. Run from anywhere — USB, Desktop, or network drive.</p>
+      <a href="https://github.com/Omux25/gemini-desktop/releases/latest">
+        <img src="https://img.shields.io/badge/Download-Portable.exe-00C853?style=for-the-badge" alt="Download Portable" />
+      </a>
+    </td>
+  </tr>
+</table>
+
+> [!NOTE]
+> **Windows SmartScreen:** As an indie open-source project without an EV Code Signing certificate, Microsoft Defender SmartScreen may flag the executable on first run. Click **"More Info → Run anyway"** to proceed.
+
+---
+
+## 🏗️ Architecture
+
+This application enforces a **strict separation of concerns** with zero escape hatches:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Frontend (Svelte 5 + TypeScript)                       │
+│  ├── settingsService.ts    — Settings IPC layer         │
+│  ├── windowService.ts      — Window IPC layer           │
+│  ├── updaterService.ts     — Auto-updater IPC layer     │
+│  └── store.ts              — Reactive state (Svelte 5)  │
+├─────────────────────────────────────────────────────────┤
+│  Backend (Rust + Tauri v2)                              │
+│  ├── ipc::window           — Hotkeys, focus, injection  │
+│  ├── ipc::settings         — Persistence & config       │
+│  ├── ipc::system           — Lifecycle & restart        │
+│  ├── updater               — Portable update engine     │
+│  └── config                — Chromium flags & paths     │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Engineering standards enforced across the codebase:**
+- Zero `any` or `@ts-ignore` bypasses — strict TypeScript with `noUnusedLocals` and `noUnusedParameters`
+- Zero inline JavaScript in Rust — all scripts extracted to `scripts/*.js` and loaded via `include_str!()`
+- Zero interval polling loops in the DOM — `MutationObserver` for all webview state detection
+- All dynamic webview parameters serialized via `serde_json::to_string()` to prevent injection
+
+---
 
 ## 🛠️ Building from Source
 
-This project uses an automated Vite + Tauri build pipeline.
+**Prerequisites:** [Node.js](https://nodejs.org/) (v18+) and [Rust](https://www.rust-lang.org/) (stable)
 
-1. Ensure you have [Node.js](https://nodejs.org/) and [Rust](https://www.rust-lang.org/) installed.
-2. Clone this repository:
-   ```bash
-   git clone https://github.com/Omux25/gemini-desktop.git
-   cd gemini-desktop
-   ```
-3. Install the dependencies:
-   ```bash
-   npm install
-   ```
-4. Run the development server:
-   ```bash
-   npm run tauri dev
-   ```
-5. Build the application for production:
-   ```bash
-   npm run tauri build
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/Omux25/gemini-desktop.git
+cd gemini-desktop
 
-## 🏗 Architecture & IPC
+# Install dependencies
+npm install
 
-This application enforces a strict separation of concerns:
-* **Frontend:** Built with vanilla Svelte 5. State management and IPC invocations are isolated into dedicated service singletons (`settingsService`, `windowService`) to ensure UI components remain pure and stateless.
-* **Backend:** Built with Rust. The monolithic command structure is broken down into domain-specific modules (`ipc::window`, `ipc::settings`, `ipc::system`).
+# Run in development mode
+npm run tauri dev
+
+# Build for production
+npm run tauri build
+```
+
+---
 
 ## 📜 License
 
-This project is licensed under the **PolyForm Noncommercial License 1.0.0**.
-You are completely free to use, modify, distribute, and build upon this code for non-commercial purposes only.
+This project is licensed under the **[PolyForm Noncommercial License 1.0.0](LICENSE)**.
+
+You are free to use, modify, distribute, and build upon this code for **non-commercial purposes only**.
