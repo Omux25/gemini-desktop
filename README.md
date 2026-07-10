@@ -1,6 +1,6 @@
 <div align="center">
   <br>
-  <img src="./assets/hero_banner.jpg" alt="Gemini Desktop Hero" width="100%" />
+  <img src="./assets/app_preview.jpg" alt="Gemini Desktop Preview" width="100%" />
   <br>
   <br>
   <img src="./public/icon.png" alt="Gemini Desktop Icon" width="80" />
