@@ -35,7 +35,6 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            ipc::system::greet,
             ipc::window::webview_back,
             ipc::window::webview_reload,
             ipc::window::hide_webview,

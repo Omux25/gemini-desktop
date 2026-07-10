@@ -26,3 +26,5 @@ dist-ssr
 Gemini-Desktop-Portable-*.exe
 updater.key*
 .env
+*.zip
+*.sig
