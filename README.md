@@ -67,8 +67,8 @@
   </tr>
   <tr>
     <td width="50%">
-      <h3>🪶 Near-Zero Memory Footprint</h3>
-      <p>Smooth Mode injects low-end Webview2 flags and flushes the working set via native OS calls. When minimized, Gemini Desktop can idle under 30 MB.</p>
+      <h3>🪶 Lightweight Native Process</h3>
+      <p>The Rust backend idles at ~1 MB. Smooth Mode injects low-end Webview2 flags and flushes the working set via native OS calls to keep the overall footprint minimal.</p>
     </td>
     <td width="50%">
       <h3>🔄 Silent Auto-Updater</h3>
