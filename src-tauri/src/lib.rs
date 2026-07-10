@@ -82,7 +82,7 @@ pub fn run() {
                     }
                     
                     // Process auto-hide transitions outside rapid focus loss window.
-                    if now.saturating_sub(last_shown) > 150 {
+                    if now.saturating_sub(last_shown) > 400 {
                         let is_pinned = state.window_pinned.load(Ordering::Acquire);
                         
                         if !is_pinned {
@@ -96,8 +96,9 @@ pub fn run() {
                             crate::process::optimize_memory(app.clone());
                         }
                     } else {
-                        // Reclaim focus when lost within threshold to maintain clean window state.
-                        let _ = window.set_focus();
+                        // Reclaim focus via WinAPI when lost immediately after showing due to OS overlay (e.g. ScreenClippingHost) dismissal.
+                        use crate::ipc::window::WindowExt;
+                        let _ = window.show_and_focus();
                     }
                 }
             }

@@ -3,7 +3,7 @@ use std::sync::atomic::Ordering;
 use crate::state::AppState;
 
 
-trait WindowExt {
+pub trait WindowExt {
     fn show_and_focus(&self) -> tauri::Result<()>;
 }
 
@@ -199,6 +199,8 @@ pub fn toggle_window(app: &tauri::AppHandle) {
                 if let Err(e) = app.emit("tray_state_changed", true) { eprintln!("Failed to emit event: {:?}", e); }
                 if let Err(e) = window.emit("request-show", ()) { eprintln!("Failed to emit event: {:?}", e); }
             }
+            state.window_visible.store(true, Ordering::Release);
+            state.window_focused.store(true, Ordering::Release);
         }
     }
 }
@@ -239,6 +241,9 @@ pub fn start_snip_mode(app: &tauri::AppHandle) {
     for window in &main_windows {
         let _ = window.hide();
     }
+    let state = app.state::<AppState>();
+    state.window_visible.store(false, Ordering::Release);
+    state.window_focused.store(false, Ordering::Release);
     std::thread::sleep(std::time::Duration::from_millis(50));
 
     #[cfg(target_os = "windows")]
