@@ -86,8 +86,6 @@
 | <kbd>Alt</kbd> + <kbd>Space</kbd> | Toggle Gemini window | ✅ |
 | <kbd>Alt</kbd> + <kbd>C</kbd> | Smart Text Selection — grab highlighted text into Gemini | ✅ |
 | <kbd>Alt</kbd> + <kbd>S</kbd> | Snip & Send — capture screen region into Gemini | ✅ |
-| <kbd>Ctrl</kbd> + <kbd>,</kbd> | Open Settings | — |
-| <kbd>Alt</kbd> + <kbd>←</kbd> | Navigate back inside Gemini | — |
 
 ---
 
