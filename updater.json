@@ -4,7 +4,7 @@
   "pub_date": "2026-07-10T02:55:00Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSajBsQ1NSWmpHcUg5a0xoMy9IRGJIaDhlRDV0K0thVlNRMHlxa0tvYlkrUE0ySmk2SU54clFjUWlybXpBNzFpMW03NmxhbmNsR3JWZDV3ekpVS0MzWWJ1TmFIQUltc0FnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjI2MTYzCWZpbGU6R2VtaW5pIERlc2t0b3BfMi4xLjBfeDY0LXNldHVwLm5zaXMuemlwCnQ0Z1BxOHd1TEZGYnlOWHB6NWxEcEtPMVovbHlrSU5HN3RHOTYyUFJqbXgvTTNncUdLSFgxWkNna1JPQzFuckxzQUplUTJSSk1ubG5BcE5yOGlwR0R3PT0K",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSajBsQ1NSWmpHcUh0QVhVK2xwbUVmZlRpank0cEt4MGtSNkZZMU02eEx0bTl2dS9aSTkwdlMvOHBURVBkdGpPZ1JHa3ZneldJTzhna3FwaVg3M3RWWmRoT2RBRFp0UmdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjUwMDk3CWZpbGU6R2VtaW5pIERlc2t0b3BfMi4yLjBfeDY0LXNldHVwLm5zaXMuemlwCndDN2VhT1JuVnNuTDBISzY5REFxZkhKYXlsYzllVzVFa3FwR2pZNk9jSVB2NCt5VzArdmZCY3poSGc5ZFQzalB0L01qWllQVm1WQnptbEZHUC9WdEJnPT0K",
       "url": "https://github.com/Omux25/gemini-desktop/releases/download/v2.2.0/Gemini-Updater-Core.zip"
     }
   }
