@@ -48,7 +48,7 @@ impl WindowExt for tauri::Window {
         
         let window_clone = self.clone();
         tauri::async_runtime::spawn(async move {
-            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+            tokio::time::sleep(std::time::Duration::from_millis(400)).await;
             if !is_pinned {
                 let _ = window_clone.set_always_on_top(false);
             }
@@ -279,38 +279,44 @@ pub fn start_snip_mode(app: &tauri::AppHandle) {
             let new_sequence = 1; // Fallback
             
             if new_sequence != old_sequence {
-                if let Ok(mut clipboard) = arboard::Clipboard::new() {
-                    if let Ok(new_image) = clipboard.get_image() {
-                        crate::ipc::window::toggle_window(&app_clone);
-                        
-                        // Convert arboard raw pixels to a Base64 PNG string
-                        use image::{ImageBuffer, RgbaImage};
-                        let image_buffer: Option<RgbaImage> = ImageBuffer::from_raw(
-                            new_image.width as u32,
-                            new_image.height as u32,
-                            new_image.bytes.into_owned(),
-                        );
-                        
-                        if let Some(img) = image_buffer {
-                            let mut cursor = std::io::Cursor::new(Vec::new());
-                            if img.write_to(&mut cursor, image::ImageFormat::Png).is_ok() {
-                                use base64::{Engine as _, engine::general_purpose};
-                                let b64 = general_purpose::STANDARD.encode(cursor.into_inner());
-                                
-                                use tauri::Manager;
-                                if let Some(webview) = app_clone.get_webview("gemini") {
-                                    let escaped_b64 = serde_json::to_string(&b64).unwrap_or_else(|_| "\"\"".to_string());
-                                    let script = format!(
-                                        "window.__gemini_snip_b64 = {};\n{}\n{}",
-                                        escaped_b64, FIND_INPUT_SCRIPT, WEBVIEW_SNIP_SCRIPT
-                                    );
-                                    let _ = webview.eval(&script);
+                // Clipboard changed, meaning the snip session ended.
+                // Immediately restore the window so it never stays hidden.
+                crate::ipc::window::toggle_window(&app_clone);
+                
+                // Retry reading the clipboard up to 10 times in case Snipping Tool is still holding the lock.
+                for _ in 0..10 {
+                    if let Ok(mut clipboard) = arboard::Clipboard::new() {
+                        if let Ok(new_image) = clipboard.get_image() {
+                            use image::{ImageBuffer, RgbaImage};
+                            let image_buffer: Option<RgbaImage> = ImageBuffer::from_raw(
+                                new_image.width as u32,
+                                new_image.height as u32,
+                                new_image.bytes.into_owned(),
+                            );
+                            
+                            if let Some(img) = image_buffer {
+                                let mut cursor = std::io::Cursor::new(Vec::new());
+                                if img.write_to(&mut cursor, image::ImageFormat::Png).is_ok() {
+                                    use base64::{Engine as _, engine::general_purpose};
+                                    let b64 = general_purpose::STANDARD.encode(cursor.into_inner());
+                                    
+                                    use tauri::Manager;
+                                    if let Some(webview) = app_clone.get_webview("gemini") {
+                                        let escaped_b64 = serde_json::to_string(&b64).unwrap_or_else(|_| "\"\"".to_string());
+                                        let script = format!(
+                                            "window.__gemini_snip_b64 = {};\n{}\n{}",
+                                            escaped_b64, FIND_INPUT_SCRIPT, WEBVIEW_SNIP_SCRIPT
+                                        );
+                                        let _ = webview.eval(&script);
+                                    }
                                 }
                             }
+                            break;
                         }
-                        break;
                     }
+                    tokio::time::sleep(std::time::Duration::from_millis(150)).await;
                 }
+                break;
             }
         }
     });
