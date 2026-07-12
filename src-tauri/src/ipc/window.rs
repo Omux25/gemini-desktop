@@ -48,7 +48,41 @@ impl WindowExt for tauri::Window {
         
         let window_clone = self.clone();
         tauri::async_runtime::spawn(async move {
-            tokio::time::sleep(std::time::Duration::from_millis(400)).await;
+            // Actively assert focus to overcome OS overlay Z-order transitions (e.g. Snipping Tool closing)
+            for _ in 0..10 {
+                if let Ok(focused) = window_clone.is_focused() {
+                    if focused { break; }
+                }
+                
+                if let Ok(hwnd) = window_clone.hwnd() {
+                    #[cfg(target_os = "windows")]
+                    unsafe {
+                        use winapi::um::winuser::{GetForegroundWindow, GetWindowThreadProcessId, AttachThreadInput, SetForegroundWindow, BringWindowToTop};
+                        use winapi::um::processthreadsapi::GetCurrentThreadId;
+                        use winapi::shared::windef::HWND;
+                        
+                        let hwnd = hwnd.0 as HWND;
+                        let foreground_window = GetForegroundWindow();
+                        let foreground_thread = GetWindowThreadProcessId(foreground_window, std::ptr::null_mut());
+                        let current_thread = GetCurrentThreadId();
+                        
+                        if foreground_thread != current_thread {
+                            AttachThreadInput(current_thread, foreground_thread, 1);
+                            SetForegroundWindow(hwnd);
+                            BringWindowToTop(hwnd);
+                            AttachThreadInput(current_thread, foreground_thread, 0);
+                        } else {
+                            SetForegroundWindow(hwnd);
+                            BringWindowToTop(hwnd);
+                        }
+                    }
+                }
+                let _ = window_clone.set_focus();
+                tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+            }
+            
+            // Ensure Z-order settles before dropping AlwaysOnTop
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
             if !is_pinned {
                 let _ = window_clone.set_always_on_top(false);
             }
